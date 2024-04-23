@@ -5,8 +5,6 @@ go 1.22
 require (
 	github.com/andybalholm/brotli v1.1.0 // indirect
 	github.com/danielgtaylor/huma/v2 v2.14.0 // indirect
-	github.com/gofiber/fiber/v3 v3.0.0-beta.2 // indirect
-	github.com/gofiber/utils/v2 v2.0.0-beta.4 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/klauspost/compress v1.17.8 // indirect
 	github.com/lib/pq v1.10.9 // indirect
