@@ -1,7 +1,8 @@
-package views
+package example
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"net/http"
 
@@ -15,9 +16,9 @@ type GreetingOutput struct {
 	}
 }
 
-func (a *ApiRoutes) Example() {
+func Route(api huma.API, db *sql.DB) {
 	// Register GET /api/hello/{name} handler.
-	huma.Register(a.Api, huma.Operation{
+	huma.Register(api, huma.Operation{
 		OperationID: "get-greeting",
 		Method:      http.MethodGet,
 		Path:        "/api/hello/{name}",

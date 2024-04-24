@@ -1,7 +1,7 @@
 package main
 
 import (
-	"hackaton-jam-back/views"
+	"hackaton-jam-back/routes"
 	"net/http"
 
 	"github.com/danielgtaylor/huma/v2"
@@ -19,7 +19,7 @@ func main() {
 
 	handler := cors.AllowAll().Handler(router)
 
-	views.Route(api, db)
+	routes.Route(api, db)
 
 	http.ListenAndServe("127.0.0.1:8888", handler)
 }
