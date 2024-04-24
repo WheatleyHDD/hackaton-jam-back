@@ -21,7 +21,7 @@ func main() {
 	handler := cors.AllowAll().Handler(router)
 
 	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		http.Redirect(w, r, fmt.Sprintf("%s/docs", r.Host), http.StatusFound)
+		http.Redirect(w, r, fmt.Sprintf("http://%s/docs", r.Host), http.StatusFound)
 	})
 	routes.Route(api, db)
 
