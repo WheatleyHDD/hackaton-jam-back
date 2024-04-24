@@ -14,8 +14,8 @@ type ApiRoutes struct {
 }
 
 // db *sql.DB
-func Route(api huma.API) {
-	apiRoutes := ApiRoutes{Api: api}
+func Route(api huma.API, db *sql.DB) {
+	apiRoutes := ApiRoutes{Api: api, Db: db}
 
 	apiRoutes.Example()
 }

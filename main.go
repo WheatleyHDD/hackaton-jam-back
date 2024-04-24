@@ -14,12 +14,12 @@ func main() {
 	router := http.NewServeMux()
 	api := humago.New(router, huma.DefaultConfig("HackatonJam API", "1.0.0"))
 
-	// db := ConnectDB()
-	// defer db.Close()
+	db := ConnectDB()
+	defer db.Close()
 
 	handler := cors.AllowAll().Handler(router)
 
-	views.Route(api)
+	views.Route(api, db)
 
 	http.ListenAndServe("127.0.0.1:8888", handler)
 }

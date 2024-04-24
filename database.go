@@ -14,10 +14,10 @@ var (
 )
 
 func ConnectDB() *sql.DB {
-	hostname := "localhost"
-	username := os.Getenv("DBUSER")
-	password := os.Getenv("DBPASSWORD")
-	database := os.Getenv("DBNAME")
+	hostname := getenv("DBHOST", "192.168.1.249")
+	username := getenv("DBUSER", "thatmaidguy")
+	password := getenv("DBPASSWORD", "")
+	database := getenv("DBNAME", "hjam")
 	sslMode := "disable"
 
 	connStr := fmt.Sprintf("postgres://%s:%s@%s/%s?sslmode=%s", username, password, hostname, database, sslMode)
@@ -26,10 +26,19 @@ func ConnectDB() *sql.DB {
 		log.Fatal(err)
 	}
 
-	err = Db.Ping()
+	err = db.Ping()
 	if err != nil {
+		log.Println("db.Ping() показал:")
 		log.Fatal(err)
 	}
 
 	return db
+}
+
+func getenv(key, fallback string) string {
+	value := os.Getenv(key)
+	if len(value) == 0 {
+		return fallback
+	}
+	return value
 }
