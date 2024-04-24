@@ -21,5 +21,5 @@ func main() {
 
 	routes.Route(api, db)
 
-	http.ListenAndServe("127.0.0.1:8888", handler)
+	http.ListenAndServe(":8888", handler)
 }
