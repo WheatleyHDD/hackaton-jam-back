@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"hackaton-jam-back/routes"
 	"net/http"
 
@@ -20,7 +21,7 @@ func main() {
 	handler := cors.AllowAll().Handler(router)
 
 	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Add("Location", "/docs")
+		http.Redirect(w, r, fmt.Sprintf("%s/docs", r.Host), http.StatusFound)
 	})
 	routes.Route(api, db)
 
