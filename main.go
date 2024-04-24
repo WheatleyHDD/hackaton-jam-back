@@ -19,6 +19,9 @@ func main() {
 
 	handler := cors.AllowAll().Handler(router)
 
+	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Add("Location", "/docs")
+	})
 	routes.Route(api, db)
 
 	http.ListenAndServe(":8888", handler)
