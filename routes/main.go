@@ -5,6 +5,7 @@ import (
 
 	"hackaton-jam-back/routes/auth"
 	"hackaton-jam-back/routes/example"
+	"hackaton-jam-back/routes/profile"
 
 	"github.com/danielgtaylor/huma/v2"
 
@@ -14,4 +15,5 @@ import (
 func Route(api huma.API, db *sql.DB) {
 	example.Route(api, db)
 	auth.Route(api, db)
+	profile.Route(api, db)
 }

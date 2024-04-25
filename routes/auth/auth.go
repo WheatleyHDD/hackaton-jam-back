@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"hackaton-jam-back/controllers/auth"
+	"hackaton-jam-back/controllers/utils"
 	"net/http"
 
 	"github.com/danielgtaylor/huma/v2"
@@ -37,7 +38,7 @@ func Route(api huma.API, db *sql.DB) {
 		Summary:       "Выход из аккаунта",
 		Tags:          []string{"Авторизация"},
 		DefaultStatus: http.StatusOK,
-	}, func(ctx context.Context, input *auth.LogoutInput) (*struct{}, error) {
+	}, func(ctx context.Context, input *utils.JustAccessTokenInput) (*struct{}, error) {
 		return auth.Logout(input, db)
 	})
 }

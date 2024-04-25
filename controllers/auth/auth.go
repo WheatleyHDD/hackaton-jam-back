@@ -33,16 +33,11 @@ type RegisterInput struct {
 	}
 }
 
-type LogoutInput struct {
-	Body struct {
-		Token string `json:"access_token" example:"82a3682d0d56f40a4d088aee08521663" doc:"Токен пользователя"`
-	}
-}
-
 type LoginResponseOutput struct {
 	Body struct {
-		Email string `json:"email" example:"example@mail.ru" doc:"E-mail пользователя"`
-		Token string `json:"access_token" example:"82a3682d0d56f40a4d088aee08521663" doc:"Токен для доступа"`
+		Email    string `json:"email" example:"example@mail.ru" doc:"E-mail пользователя"`
+		Username string `json:"username" example:"example@mail.ru" doc:"Никнейм пользователя"`
+		Token    string `json:"access_token" example:"82a3682d0d56f40a4d088aee08521663" doc:"Токен для доступа"`
 	}
 }
 
@@ -105,11 +100,12 @@ func Login(input *LoginInput, db *sql.DB) (*LoginResponseOutput, error) {
 	}
 
 	// Получаем данные и проверяем пароли
-	row := db.QueryRow("SELECT email, password FROM users WHERE email = $1", input.Body.Email)
+	row := db.QueryRow("SELECT email, username, password FROM users WHERE email = $1", input.Body.Email)
 
 	var email string
+	var username string
 	var hashed_pass string
-	err = row.Scan(&email, &hashed_pass)
+	err = row.Scan(&email, &username, &hashed_pass)
 	if err != nil {
 		return nil, huma.Error422UnprocessableEntity(err.Error())
 	}
@@ -146,12 +142,13 @@ func Login(input *LoginInput, db *sql.DB) (*LoginResponseOutput, error) {
 	resp := &LoginResponseOutput{}
 
 	resp.Body.Email = email
+	resp.Body.Username = username
 	resp.Body.Token = token
 
 	return resp, nil
 }
 
-func Logout(input *LogoutInput, db *sql.DB) (*struct{}, error) {
+func Logout(input *utils.JustAccessTokenInput, db *sql.DB) (*struct{}, error) {
 	user, err := utils.GetUserEmailByToken(input.Body.Token, db)
 	if err != nil {
 		return nil, err
