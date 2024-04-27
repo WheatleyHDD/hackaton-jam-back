@@ -13,10 +13,10 @@ var (
 	Db *sql.DB
 )
 
-func ConnectDB() *sql.DB {
+func ConnectDB(passwd string) *sql.DB {
 	hostname := getenv("DBHOST", "192.168.1.249")
 	username := getenv("DBUSER", "thatmaidguy")
-	password := getenv("DBPASSWORD", "")
+	password := passwd
 	database := getenv("DBNAME", "hjam")
 	sslMode := "disable"
 
