@@ -9,10 +9,6 @@ import (
 	_ "github.com/lib/pq"
 )
 
-var (
-	Db *sql.DB
-)
-
 func ConnectDB(passwd string) *sql.DB {
 	hostname := getenv("DBHOST", "192.168.1.249")
 	username := getenv("DBUSER", "thatmaidguy")
