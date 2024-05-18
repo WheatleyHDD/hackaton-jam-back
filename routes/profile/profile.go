@@ -32,4 +32,15 @@ func Route(api huma.API, db *sql.DB) {
 	}, func(ctx context.Context, input *utils.JustAccessTokenInput) (*profile.ProfileOutput, error) {
 		return profile.GetCurrentProfile(input, db)
 	})
+
+	huma.Register(api, huma.Operation{
+		OperationID: "edit-profile",
+		Method:      http.MethodPost,
+		Path:        "/api/profile/edit",
+		Summary:     "Редактировать профиль",
+		Description: "Редактирует профиль текущего пользователя",
+		Tags:        []string{"Профили"},
+	}, func(ctx context.Context, input *profile.EditProfileInput) (*profile.ProfileOutput, error) {
+		return profile.EditProfile(input, db)
+	})
 }
