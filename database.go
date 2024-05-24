@@ -7,16 +7,16 @@ import (
 	"os"
 
 	_ "github.com/lib/pq"
+	"github.com/tanimutomo/sqlfile"
 )
 
-func ConnectDB(passwd string) *sql.DB {
-	hostname := getenv("DBHOST", "192.168.1.249")
-	username := getenv("DBUSER", "thatmaidguy")
-	password := passwd
-	database := getenv("DBNAME", "hjam")
+func ConnectDB() *sql.DB {
+	username := os.Getenv("DB_USER")
+	password := os.Getenv("DB_PASSWORD")
+	database := os.Getenv("DB_NAME")
 	sslMode := "disable"
 
-	connStr := fmt.Sprintf("postgres://%s:%s@%s/%s?sslmode=%s", username, password, hostname, database, sslMode)
+	connStr := fmt.Sprintf("postgres://%s:%s@%s/%s?sslmode=%s", username, password, "db", database, sslMode)
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
 		log.Fatal(err)
@@ -26,6 +26,18 @@ func ConnectDB(passwd string) *sql.DB {
 	if err != nil {
 		log.Println("db.Ping() показал:")
 		log.Fatal(err)
+	}
+
+	s := sqlfile.New()
+
+	// Load input file and store queries written in the file
+	err = s.File("sql/hjam.sql")
+	if err != nil {
+		log.Fatal("Невозможно получить файл")
+	}
+	_, err = s.Exec(db)
+	if err != nil {
+		log.Fatal("Невозможно мигрировать базу данных")
 	}
 
 	return db

@@ -1,2 +1,4 @@
 hackaton-jam-back
 /out
+.env
+/tmp

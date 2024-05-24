@@ -15,9 +15,8 @@ import (
 
 // Options for the CLI. Pass `--port` or set the `SERVICE_PORT` env var.
 type Options struct {
-	Port       int    `help:"Port to listen on" short:"p" default:"8888"`
-	DbPassword string `help:"Database password" default:"default"`
-	Ip         string `help:"Ip address to listen on" short:"i" default:"127.0.0.1"`
+	Port int    `help:"Port to listen on" short:"p" default:"8888"`
+	Ip   string `help:"Ip address to listen on" short:"i" default:"127.0.0.1"`
 }
 
 func main() {
@@ -25,7 +24,7 @@ func main() {
 		router := http.NewServeMux()
 		api := humago.New(router, huma.DefaultConfig("HackatonJam API", "1.0.0"))
 
-		db := ConnectDB(options.DbPassword)
+		db := ConnectDB()
 
 		handler := cors.AllowAll().Handler(router)
 
