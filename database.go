@@ -28,16 +28,18 @@ func ConnectDB() *sql.DB {
 		log.Fatal(err)
 	}
 
-	s := sqlfile.New()
+	if os.Getenv("FIRST_RUN") == "1" {
+		s := sqlfile.New()
 
-	// Load input file and store queries written in the file
-	err = s.File("sql/hjam.sql")
-	if err != nil {
-		log.Fatal("Невозможно получить файл")
-	}
-	_, err = s.Exec(db)
-	if err != nil {
-		log.Fatal("Невозможно мигрировать базу данных")
+		// Load input file and store queries written in the file
+		err = s.File("sql/hjam.sql")
+		if err != nil {
+			log.Fatal("Невозможно получить файл")
+		}
+		_, err = s.Exec(db)
+		if err != nil {
+			log.Fatal("Невозможно мигрировать базу данных")
+		}
 	}
 
 	return db
