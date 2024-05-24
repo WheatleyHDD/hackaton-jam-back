@@ -67,31 +67,31 @@ CREATE TABLE IF NOT EXISTS "tokens" (
 	PRIMARY KEY ("token")
 );
 
-ALTER TABLE "skills" DROP CONSTRAINT "skills_fk0";
+-- ALTER TABLE "skills" DROP CONSTRAINT "skills_fk0";
 ALTER TABLE "skills" ADD CONSTRAINT "skills_fk0" FOREIGN KEY ("user_email") REFERENCES "users"("email");
 
-ALTER TABLE "contacts" DROP CONSTRAINT "contacts_fk0";
+-- ALTER TABLE "contacts" DROP CONSTRAINT "contacts_fk0";
 ALTER TABLE "contacts" ADD CONSTRAINT "contacts_fk0" FOREIGN KEY ("user_email") REFERENCES "users"("email");
 
-ALTER TABLE "event_members" DROP CONSTRAINT "event_members_fk0";
+-- ALTER TABLE "event_members" DROP CONSTRAINT "event_members_fk0";
 ALTER TABLE "event_members" ADD CONSTRAINT "event_members_fk0" FOREIGN KEY ("event_uri") REFERENCES "events"("urid");
 
-ALTER TABLE "event_members" DROP CONSTRAINT "event_members_fk1";
+-- ALTER TABLE "event_members" DROP CONSTRAINT "event_members_fk1";
 ALTER TABLE "event_members" ADD CONSTRAINT "event_members_fk1" FOREIGN KEY ("member_email") REFERENCES "users"("email");
 
-ALTER TABLE "event_orgs" DROP CONSTRAINT "event_orgs_fk0";
+-- ALTER TABLE "event_orgs" DROP CONSTRAINT "event_orgs_fk0";
 ALTER TABLE "event_orgs" ADD CONSTRAINT "event_orgs_fk0" FOREIGN KEY ("event_uri") REFERENCES "events"("urid");
 
 
-ALTER TABLE "event_orgs" DROP CONSTRAINT "event_orgs_fk1";
+-- ALTER TABLE "event_orgs" DROP CONSTRAINT "event_orgs_fk1";
 ALTER TABLE "event_orgs" ADD CONSTRAINT "event_orgs_fk1" FOREIGN KEY ("organizator_email") REFERENCES "users"("email");
 
-ALTER TABLE "event_blog" DROP CONSTRAINT "event_blog_fk1";
+-- ALTER TABLE "event_blog" DROP CONSTRAINT "event_blog_fk1";
 ALTER TABLE "event_blog" ADD CONSTRAINT "event_blog_fk1" FOREIGN KEY ("event_uri") REFERENCES "events"("urid");
 
 
-ALTER TABLE "event_blog" DROP CONSTRAINT "event_blog_fk3";
+-- ALTER TABLE "event_blog" DROP CONSTRAINT "event_blog_fk3";
 ALTER TABLE "event_blog" ADD CONSTRAINT "event_blog_fk3" FOREIGN KEY ("author") REFERENCES "users"("email");
 
-ALTER TABLE "tokens" DROP CONSTRAINT "tokens_fk1";
+-- ALTER TABLE "tokens" DROP CONSTRAINT "tokens_fk1";
 ALTER TABLE "tokens" ADD CONSTRAINT "tokens_fk1" FOREIGN KEY ("user_email") REFERENCES "users"("email");
