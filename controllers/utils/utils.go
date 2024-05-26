@@ -32,6 +32,20 @@ func GetUserEmailByToken(token string, db *sql.DB) (*UserEmail, error) {
 	return userdata, nil
 }
 
+func GetUserEmailByUsername(username string, db *sql.DB) (*UserEmail, error) {
+	row := db.QueryRow("SELECT email, username, perms FROM users WHERE username = $1", username)
+
+	userdata := new(UserEmail)
+	err := row.Scan(&userdata.Email, &userdata.Username, &userdata.Perms)
+	if err != nil {
+		return nil, huma.Error403Forbidden("Токен недействительный")
+	}
+	if userdata.Email == "" {
+		return nil, huma.Error403Forbidden("Нет доступа")
+	}
+	return userdata, nil
+}
+
 func NilToEmpty(val sql.NullString) string {
 	return val.String
 }

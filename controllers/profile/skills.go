@@ -8,7 +8,8 @@ import (
 )
 
 type AddDelProfileSkillsInput struct {
-	Body struct {
+	Username string `path:"username" maxLength:"30" example:"ThatMaidGuy" doc:"Никнейм пользователя"`
+	Body     struct {
 		Token string `json:"access_token" example:"82a3682d0d56f40a4d088aee08521663" doc:"Токен пользователя"`
 		Skill string `json:"contact_link" example:"C#" doc:"Навык"`
 	}
@@ -34,13 +35,20 @@ type SkillsSearchOutput struct {
 	}
 }
 
-/// ==============================================
-/// ==============================================
-/// ====== Список навыков для пользователя =======
-/// ==============================================
-/// ==============================================
+// / ==============================================
+// / ==============================================
+// / ====== Список навыков для пользователя =======
+// / ==============================================
+// / ==============================================
+func GetSkills(username string, db *sql.DB) (*ProfileSkillsOutput, error) {
+	user, err := utils.GetUserEmailByUsername(username, db)
+	if err != nil {
+		return nil, huma.Error403Forbidden("Пользователь не найден")
+	}
+	return GetSkillsByEmail(user.Email, db)
+}
 
-func getSkillsByEmail(email string, db *sql.DB) (*ProfileSkillsOutput, error) {
+func GetSkillsByEmail(email string, db *sql.DB) (*ProfileSkillsOutput, error) {
 	rows, err := db.Query("SELECT skill FROM skills WHERE user_email = $1", email)
 	if err != nil {
 		return nil, err
@@ -66,24 +74,18 @@ func getSkillsByEmail(email string, db *sql.DB) (*ProfileSkillsOutput, error) {
 	return result, nil
 }
 
-func GetSkillsList(input *GetProfileInput, db *sql.DB) (*ProfileSkillsOutput, error) {
+func AddSkill(input *AddDelProfileSkillsInput, db *sql.DB) (*ProfileSkillsOutput, error) {
+	// Проверить можем ли менять?
 	user, err := utils.GetUserEmailByToken(input.Body.Token, db)
 	if err != nil {
 		return nil, huma.Error403Forbidden("Пользователь не найден")
 	}
-
-	return getSkillsByEmail(user.Email, db)
-}
-
-func AddSkill(input *AddDelProfileSkillsInput, db *sql.DB) (*ProfileSkillsOutput, error) {
-	// Найти пользователя
-	user, err := utils.GetUserEmailByToken(input.Body.Token, db)
-	if err != nil {
-		return nil, huma.Error403Forbidden("Пользователь не найден")
+	if input.Username != user.Username && user.Perms != 10 {
+		return nil, huma.Error403Forbidden("Нет прав")
 	}
 
 	// Получить уже имеющиеся навыки
-	existingSkills, err := getSkillsByEmail(user.Email, db)
+	existingSkills, err := GetSkillsByEmail(user.Email, db)
 	if err != nil {
 		return nil, huma.Error403Forbidden(err.Error())
 	}
@@ -107,10 +109,13 @@ func AddSkill(input *AddDelProfileSkillsInput, db *sql.DB) (*ProfileSkillsOutput
 }
 
 func DelSkill(input *AddDelProfileSkillsInput, db *sql.DB) (*ProfileSkillsOutput, error) {
-	// Найти пользователя
+	// Проверить можем ли менять?
 	user, err := utils.GetUserEmailByToken(input.Body.Token, db)
 	if err != nil {
 		return nil, huma.Error403Forbidden("Пользователь не найден")
+	}
+	if input.Username != user.Username && user.Perms != 10 {
+		return nil, huma.Error403Forbidden("Нет прав")
 	}
 
 	// Удалить ссылку
@@ -119,7 +124,7 @@ func DelSkill(input *AddDelProfileSkillsInput, db *sql.DB) (*ProfileSkillsOutput
 		return nil, huma.Error422UnprocessableEntity("Похоже такого навыка у пользователя не было")
 	}
 
-	return getSkillsByEmail(user.Email, db)
+	return GetSkillsByEmail(user.Email, db)
 }
 
 func GetSkillsByName(input *SkillsSearchInput, db *sql.DB) (*SkillsSearchOutput, error) {
