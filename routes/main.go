@@ -4,7 +4,7 @@ import (
 	"database/sql"
 
 	"hackaton-jam-back/routes/auth"
-	_ "hackaton-jam-back/routes/events"
+	"hackaton-jam-back/routes/events"
 	"hackaton-jam-back/routes/example"
 	"hackaton-jam-back/routes/profile"
 
@@ -17,4 +17,5 @@ func Route(api huma.API, db *sql.DB) {
 	example.Route(api, db)
 	auth.Route(api, db)
 	profile.Route(api, db)
+	events.Route(api, db)
 }

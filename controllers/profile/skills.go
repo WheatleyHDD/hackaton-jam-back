@@ -145,7 +145,8 @@ func GetSkillsByName(input *SkillsSearchInput, db *sql.DB) (*SkillsSearchOutput,
 
 	for rows.Next() {
 		var skill string
-		if err := rows.Scan(&skill); err != nil {
+		var count int
+		if err := rows.Scan(&skill, &count); err != nil {
 			return nil, huma.Error422UnprocessableEntity(err.Error())
 		}
 		skills = append(skills, skill)

@@ -28,6 +28,7 @@ CREATE TABLE IF NOT EXISTS "contacts" (
 
 CREATE TABLE IF NOT EXISTS "events" (
 	"urid" text NOT NULL UNIQUE,
+	"id" bigserial GENERATED ALWAYS AS IDENTITY NOT NULL UNIQUE,
 	"name" text NOT NULL,
 	"start_time" timestamp with time zone NOT NULL,
 	"end_time" timestamp with time zone NOT NULL,

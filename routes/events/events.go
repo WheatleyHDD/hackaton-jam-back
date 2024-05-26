@@ -3,8 +3,7 @@ package events
 import (
 	"context"
 	"database/sql"
-	"hackaton-jam-back/controllers/auth"
-	"hackaton-jam-back/controllers/utils"
+	"hackaton-jam-back/controllers/events"
 	"net/http"
 
 	"github.com/danielgtaylor/huma/v2"
@@ -12,33 +11,15 @@ import (
 
 func Route(api huma.API, db *sql.DB) {
 	huma.Register(api, huma.Operation{
-		OperationID: "login",
-		Method:      http.MethodPost,
-		Path:        "/api/login",
-		Summary:     "Вход в аккаунт",
-		Tags:        []string{"Авторизация"},
-	}, func(ctx context.Context, input *auth.LoginInput) (*auth.LoginResponseOutput, error) {
-		return auth.Login(input, db)
-	})
-
-	huma.Register(api, huma.Operation{
-		OperationID: "register",
-		Method:      http.MethodPost,
-		Path:        "/api/register",
-		Summary:     "Регистрация аккаунта",
-		Tags:        []string{"Авторизация"},
-	}, func(ctx context.Context, input *auth.RegisterInput) (*auth.LoginResponseOutput, error) {
-		return auth.Register(input, db)
-	})
-
-	huma.Register(api, huma.Operation{
-		OperationID:   "logout",
-		Method:        http.MethodPost,
-		Path:          "/api/logout",
-		Summary:       "Выход из аккаунта",
-		Tags:          []string{"Авторизация"},
-		DefaultStatus: http.StatusOK,
-	}, func(ctx context.Context, input *utils.JustAccessTokenInput) (*struct{}, error) {
-		return auth.Logout(input, db)
+		OperationID: "get-last-events",
+		Method:      http.MethodGet,
+		Path:        "/api/events/last",
+		Summary:     "Получить последние мероприятия",
+		Tags:        []string{"Мероприятия"},
+	}, func(ctx context.Context, input *struct {
+		Count int `path:"count" example:"20" doc:"Количество мероприятий на страницу"`
+		Page  int `path:"page" example:"0" doc:"Страница"`
+	}) (*events.GetEventsOutput, error) {
+		return events.GetAllEvents(input.Count, input.Page, db)
 	})
 }
