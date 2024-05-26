@@ -8,6 +8,13 @@ import (
 	"github.com/danielgtaylor/huma/v2"
 )
 
+type GetProfileInput struct {
+	Body struct {
+		Token    string `json:"access_token" example:"82a3682d0d56f40a4d088aee08521663" doc:"Токен пользователя"`
+		Username string `json:"username,omitempty" example:"ThatMaidGuy" doc:"Никнейм пользователя"`
+	}
+}
+
 type EditProfileInput struct {
 	Body struct {
 		Token string `json:"access_token" example:"82a3682d0d56f40a4d088aee08521663" doc:"Токен пользователя"`

@@ -25,11 +25,12 @@ type LoginInput struct {
 
 type RegisterInput struct {
 	Body struct {
-		Email     string `json:"email" example:"thatmaidguy@ya.ru" doc:"E-mail пользователя"`
-		Username  string `json:"username" example:"ThatMaidGuy" doc:"Никнейм пользователя"`
-		FirstName string `json:"first_name" example:"Иван" doc:"Имя пользователя"`
-		LastName  string `json:"last_name" example:"Иванов" doc:"Фамилия пользователя"`
-		Password  string `json:"password" example:"qwerty123" doc:"Пароль пользователя"`
+		Email         string `json:"email" example:"thatmaidguy@ya.ru" doc:"E-mail пользователя"`
+		Username      string `json:"username" example:"ThatMaidGuy" doc:"Никнейм пользователя"`
+		FirstName     string `json:"first_name" example:"Иван" doc:"Имя пользователя"`
+		LastName      string `json:"last_name" example:"Иванов" doc:"Фамилия пользователя"`
+		Password      string `json:"password" example:"qwerty123" doc:"Пароль пользователя"`
+		IsOrganisator bool   `json:"is_organisator" doc:"Профиль для организатора?"`
 	}
 }
 
@@ -69,9 +70,14 @@ func Register(input *RegisterInput, db *sql.DB) (*LoginResponseOutput, error) {
 	}
 	hash := string(hashedBytes[:])
 
+	perm := 0
+	if input.Body.IsOrganisator {
+		perm = 1
+	}
+
 	// Запись в базу
-	_, err = db.Query("INSERT INTO users (email, username, first_name, last_name, password) VALUES ($1, $2, $3, $4, $5)",
-		input.Body.Email, input.Body.Username, input.Body.FirstName, input.Body.LastName, hash)
+	_, err = db.Query("INSERT INTO users (email, username, first_name, last_name, password, perms) VALUES ($1, $2, $3, $4, $5, $6)",
+		input.Body.Email, input.Body.Username, input.Body.FirstName, input.Body.LastName, hash, perm)
 	if err != nil {
 		return nil, huma.Error422UnprocessableEntity(err.Error())
 	}
