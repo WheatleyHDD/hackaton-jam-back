@@ -52,7 +52,7 @@ func Route(api huma.API, db *sql.DB) {
 
 	huma.Register(api, huma.Operation{
 		OperationID: "get-profile-contacts",
-		Method:      http.MethodPost,
+		Method:      http.MethodGet,
 		Path:        "/api/profile/{username}/contacts",
 		Summary:     "Вывести контакты пользователя",
 		Description: "Выводит контакты пользователя",
@@ -92,7 +92,7 @@ func Route(api huma.API, db *sql.DB) {
 	/// ======================================
 	huma.Register(api, huma.Operation{
 		OperationID: "get-profile-skills",
-		Method:      http.MethodPost,
+		Method:      http.MethodGet,
 		Path:        "/api/profile/{username}/skills",
 		Summary:     "Вывести навыки пользователя",
 		Description: "Выводит навыки пользователя",
