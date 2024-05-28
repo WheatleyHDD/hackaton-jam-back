@@ -20,7 +20,7 @@ type EventJoinExitOutput struct {
 
 type UserEventsOutput struct {
 	Body struct {
-		Events []EventType
+		Events []EventType `json:"event" doc:"Лист с событиями"`
 	}
 }
 
