@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"hackaton-jam-back/controllers/events"
+	"hackaton-jam-back/controllers/utils"
 	"net/http"
 
 	"github.com/danielgtaylor/huma/v2"
@@ -14,10 +15,10 @@ func Route(api huma.API, db *sql.DB) {
 		OperationID: "get-last-events",
 		Method:      http.MethodGet,
 		Path:        "/api/events/last",
-		Summary:     "Получить последние мероприятия",
-		Tags:        []string{"Мероприятия"},
+		Summary:     "Получить последние события",
+		Tags:        []string{"События"},
 	}, func(ctx context.Context, input *struct {
-		Count int `query:"count" default:"20" example:"20" doc:"Количество мероприятий на страницу"`
+		Count int `query:"count" default:"20" example:"20" doc:"Количество событий на страницу"`
 		Page  int `query:"page" default:"0" example:"0" doc:"Страница"`
 	}) (*events.GetEventsOutput, error) {
 		return events.GetAllEvents(input.Count, input.Page, db)
@@ -27,10 +28,10 @@ func Route(api huma.API, db *sql.DB) {
 		OperationID: "get-event-info",
 		Method:      http.MethodGet,
 		Path:        "/api/event/{urid}",
-		Summary:     "Получить полную информацию мероприятия",
-		Tags:        []string{"Мероприятия"},
+		Summary:     "Получить полную информацию события",
+		Tags:        []string{"События"},
 	}, func(ctx context.Context, input *struct {
-		Urid string `path:"urid" doc:"Urid мероприятия"`
+		Urid string `path:"urid" doc:"Urid события"`
 	}) (*events.FullEventOutput, error) {
 		return events.GetFullEventInfo(input.Urid, db)
 	})
@@ -39,8 +40,8 @@ func Route(api huma.API, db *sql.DB) {
 		OperationID: "create-event",
 		Method:      http.MethodPost,
 		Path:        "/api/event/create",
-		Summary:     "Создать мероприятие (только для организаторов)",
-		Tags:        []string{"Мероприятия"},
+		Summary:     "Создать событие (только для организаторов)",
+		Tags:        []string{"События"},
 	}, func(ctx context.Context, input *events.EventCreationInput) (*events.FullEventOutput, error) {
 		return events.CreateEvent(input, db)
 	})
@@ -49,19 +50,57 @@ func Route(api huma.API, db *sql.DB) {
 		OperationID: "edit-event",
 		Method:      http.MethodPost,
 		Path:        "/api/event/{urid}/edit",
-		Summary:     "Редактировать мероприятие",
-		Tags:        []string{"Мероприятия"},
+		Summary:     "Редактировать событие",
+		Tags:        []string{"События"},
 	}, func(ctx context.Context, input *events.EventEditInput) (*events.FullEventOutput, error) {
 		return events.EditEvent(input, db)
 	})
 
 	huma.Register(api, huma.Operation{
-		OperationID: "edit-event",
+		OperationID: "join-event",
 		Method:      http.MethodPost,
 		Path:        "/api/event/{urid}/join",
-		Summary:     "Редактировать мероприятие",
-		Tags:        []string{"Мероприятия"},
-	}, func(ctx context.Context, input *events.EventEditInput) (*events.FullEventOutput, error) {
-		return events.EditEvent(input, db)
+		Summary:     "Присоединиться к событию",
+		Tags:        []string{"События и пользователи"},
+	}, func(ctx context.Context, input *events.EventJoinExitInput) (*events.EventJoinExitOutput, error) {
+		return events.JoinEvent(input, db)
+	})
+
+	huma.Register(api, huma.Operation{
+		OperationID: "exit-event",
+		Method:      http.MethodPost,
+		Path:        "/api/event/{urid}/exit",
+		Summary:     "Выйти из события",
+		Tags:        []string{"События и пользователи"},
+	}, func(ctx context.Context, input *events.EventJoinExitInput) (*events.EventJoinExitOutput, error) {
+		return events.ExitEvent(input, db)
+	})
+
+	huma.Register(api, huma.Operation{
+		OperationID: "get-user-events",
+		Method:      http.MethodGet,
+		Path:        "/api/user-events/{email}",
+		Summary:     "События пользователя",
+		Tags:        []string{"События и пользователи"},
+	}, func(ctx context.Context, input *struct {
+		Email string `path:"email" example:"thatmaidguy@ya.ru" doc:"E-mail пользователя"`
+	}) (*events.UserEventsOutput, error) {
+		return events.GetAllJoinedEvents(input.Email, db)
+	})
+
+	huma.Register(api, huma.Operation{
+		OperationID: "get-curr-user-events",
+		Method:      http.MethodPost,
+		Path:        "/api/user-events",
+		Summary:     "События текущего пользователя",
+		Tags:        []string{"События и пользователи"},
+	}, func(ctx context.Context, input *utils.JustAccessTokenInput) (*events.UserEventsOutput, error) {
+		// Проверить можем ли присоединится к меро?
+		user, err := utils.GetUserEmailByToken(input.Body.Token, db)
+		if err != nil {
+			return nil, huma.Error403Forbidden("Пользователь не найден")
+		}
+
+		return events.GetAllJoinedEvents(user.Email, db)
 	})
 }
