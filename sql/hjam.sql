@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS "contacts" (
 
 CREATE TABLE IF NOT EXISTS "events" (
 	"urid" text NOT NULL UNIQUE,
-	"id" bigserial GENERATED ALWAYS AS IDENTITY NOT NULL UNIQUE,
+	"id" bigserial NOT NULL UNIQUE,
 	"name" text NOT NULL,
 	"start_time" timestamp with time zone NOT NULL,
 	"end_time" timestamp with time zone NOT NULL,
@@ -37,6 +37,10 @@ CREATE TABLE IF NOT EXISTS "events" (
 	"desc" text NOT NULL,
 	"requirements" text,
 	"partners" text,
+	"icon" text,
+	"is_irl" boolean NOT NULL DEFAULT false,
+	"team_requirements_type" bigint NOT NULL,
+	"team_requirements_value" bigint NOT NULL,
 	PRIMARY KEY ("urid")
 );
 
@@ -68,31 +72,34 @@ CREATE TABLE IF NOT EXISTS "tokens" (
 	PRIMARY KEY ("token")
 );
 
--- ALTER TABLE "skills" DROP CONSTRAINT "skills_fk0";
-ALTER TABLE "skills" ADD CONSTRAINT "skills_fk0" FOREIGN KEY ("user_email") REFERENCES "users"("email");
+CREATE TABLE IF NOT EXISTS "teams" (
+	"id" bigint GENERATED ALWAYS AS IDENTITY NOT NULL UNIQUE,
+	"name" text NOT NULL DEFAULT 'Без названия',
+	PRIMARY KEY ("id")
+);
 
--- ALTER TABLE "contacts" DROP CONSTRAINT "contacts_fk0";
+CREATE TABLE IF NOT EXISTS "teams_members" (
+	"team_id" bigint GENERATED ALWAYS AS IDENTITY NOT NULL UNIQUE,
+	"member_email" text NOT NULL,
+	"role" text NOT NULL,
+	PRIMARY KEY ("team_id")
+);
+
+
+ALTER TABLE "skills" ADD CONSTRAINT "skills_fk0" FOREIGN KEY ("user_email") REFERENCES "users"("email");
 ALTER TABLE "contacts" ADD CONSTRAINT "contacts_fk0" FOREIGN KEY ("user_email") REFERENCES "users"("email");
 
--- ALTER TABLE "event_members" DROP CONSTRAINT "event_members_fk0";
 ALTER TABLE "event_members" ADD CONSTRAINT "event_members_fk0" FOREIGN KEY ("event_uri") REFERENCES "events"("urid");
 
--- ALTER TABLE "event_members" DROP CONSTRAINT "event_members_fk1";
 ALTER TABLE "event_members" ADD CONSTRAINT "event_members_fk1" FOREIGN KEY ("member_email") REFERENCES "users"("email");
-
--- ALTER TABLE "event_orgs" DROP CONSTRAINT "event_orgs_fk0";
 ALTER TABLE "event_orgs" ADD CONSTRAINT "event_orgs_fk0" FOREIGN KEY ("event_uri") REFERENCES "events"("urid");
 
-
--- ALTER TABLE "event_orgs" DROP CONSTRAINT "event_orgs_fk1";
 ALTER TABLE "event_orgs" ADD CONSTRAINT "event_orgs_fk1" FOREIGN KEY ("organizator_email") REFERENCES "users"("email");
-
--- ALTER TABLE "event_blog" DROP CONSTRAINT "event_blog_fk1";
 ALTER TABLE "event_blog" ADD CONSTRAINT "event_blog_fk1" FOREIGN KEY ("event_uri") REFERENCES "events"("urid");
 
-
--- ALTER TABLE "event_blog" DROP CONSTRAINT "event_blog_fk3";
 ALTER TABLE "event_blog" ADD CONSTRAINT "event_blog_fk3" FOREIGN KEY ("author") REFERENCES "users"("email");
-
--- ALTER TABLE "tokens" DROP CONSTRAINT "tokens_fk1";
 ALTER TABLE "tokens" ADD CONSTRAINT "tokens_fk1" FOREIGN KEY ("user_email") REFERENCES "users"("email");
+
+ALTER TABLE "teams_members" ADD CONSTRAINT "teams_members_fk0" FOREIGN KEY ("team_id") REFERENCES "teams"("id");
+
+ALTER TABLE "teams_members" ADD CONSTRAINT "teams_members_fk1" FOREIGN KEY ("member_email") REFERENCES "users"("email");

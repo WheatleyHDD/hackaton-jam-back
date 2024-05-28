@@ -11,8 +11,8 @@ import (
 
 type GetEventsOutput struct {
 	Body struct {
-		Count  int
-		Events []EventType
+		Count  int         `json:"count" doc:"Количество мероприятий всего"`
+		Events []EventType `json:"urid" doc:"Список мероприятий"`
 	}
 }
 
@@ -27,7 +27,7 @@ type EventType struct {
 }
 
 func GetEventCount(db *sql.DB) (int, error) {
-	row := db.QueryRow("SELECT COUNT(*) AS total_records FROM event")
+	row := db.QueryRow("SELECT COUNT(*) AS total_records FROM events")
 	var result int
 
 	err := row.Scan(&result)

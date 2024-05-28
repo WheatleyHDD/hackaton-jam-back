@@ -29,6 +29,9 @@ func ConnectDB() *sql.DB {
 	}
 
 	if os.Getenv("FIRST_RUN") == "1" {
+		_ = db.QueryRow("DROP SCHEMA public CASCADE;" +
+			"CREATE SCHEMA public;")
+
 		s := sqlfile.New()
 
 		// Load input file and store queries written in the file

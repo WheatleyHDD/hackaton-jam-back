@@ -54,4 +54,14 @@ func Route(api huma.API, db *sql.DB) {
 	}, func(ctx context.Context, input *events.EventEditInput) (*events.FullEventOutput, error) {
 		return events.EditEvent(input, db)
 	})
+
+	huma.Register(api, huma.Operation{
+		OperationID: "edit-event",
+		Method:      http.MethodPost,
+		Path:        "/api/event/{urid}/join",
+		Summary:     "Редактировать мероприятие",
+		Tags:        []string{"Мероприятия"},
+	}, func(ctx context.Context, input *events.EventEditInput) (*events.FullEventOutput, error) {
+		return events.EditEvent(input, db)
+	})
 }
