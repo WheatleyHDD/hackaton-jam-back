@@ -38,7 +38,21 @@ func GetUserEmailByUsername(username string, db *sql.DB) (*UserEmail, error) {
 	userdata := new(UserEmail)
 	err := row.Scan(&userdata.Email, &userdata.Username, &userdata.Perms)
 	if err != nil {
-		return nil, huma.Error403Forbidden("Токен недействительный")
+		return nil, huma.Error403Forbidden("Имя пользователя недействительное")
+	}
+	if userdata.Email == "" {
+		return nil, huma.Error403Forbidden("Нет доступа")
+	}
+	return userdata, nil
+}
+
+func GetUserUsernameByEmail(email string, db *sql.DB) (*UserEmail, error) {
+	row := db.QueryRow("SELECT email, username, perms FROM users WHERE email = $1", email)
+
+	userdata := new(UserEmail)
+	err := row.Scan(&userdata.Email, &userdata.Username, &userdata.Perms)
+	if err != nil {
+		return nil, huma.Error403Forbidden("E-mail недействительный")
 	}
 	if userdata.Email == "" {
 		return nil, huma.Error403Forbidden("Нет доступа")
