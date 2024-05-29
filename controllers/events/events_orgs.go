@@ -90,8 +90,8 @@ func CreateEvent(input *EventCreationInput, db *sql.DB) (*FullEventOutput, error
 
 	// Запись в базу
 	_, err = db.Query("INSERT INTO events ("+
-		"urid, name, start_time, end_time, prize, location, desc, requirements,"+
-		"partners, icon, is_irl, team_requirements_type, team_requirements_value)"+
+		"urid, name, start_time, end_time, prize, \"location\", \"desc\", requirements, "+
+		"partners, icon, is_irl, team_requirements_type, team_requirements_value) "+
 		"VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)",
 
 		input.Body.Urid, input.Body.Name,

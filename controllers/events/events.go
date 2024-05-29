@@ -87,6 +87,7 @@ func getFullEventInfo(urid string, db *sql.DB) (*FullEventOutput, error) {
 	var requirements sql.NullString
 	var partners sql.NullString
 	var icon sql.NullString
+	var desc sql.NullString
 
 	err := row.Scan(
 		&event.Body.Urid,
@@ -96,6 +97,7 @@ func getFullEventInfo(urid string, db *sql.DB) (*FullEventOutput, error) {
 		&event.Body.EndTime,
 		&prize,
 		&location,
+		&desc,
 		&requirements,
 		&partners,
 		&icon,
@@ -113,6 +115,7 @@ func getFullEventInfo(urid string, db *sql.DB) (*FullEventOutput, error) {
 	event.Body.Requirements = requirements.String
 	event.Body.Partners = partners.String
 	event.Body.Icon = icon.String
+	event.Body.Description = desc.String
 
 	event.Body.Organizators, err = getEventOrganizators(urid, db)
 	if err != nil {
@@ -123,7 +126,7 @@ func getFullEventInfo(urid string, db *sql.DB) (*FullEventOutput, error) {
 }
 
 func getEventOrganizators(urid string, db *sql.DB) ([]*Organizators, error) {
-	rows, err := db.Query("SELECT organizator_email FROM events WHERE event_uri = $1", urid)
+	rows, err := db.Query("SELECT organizator_email FROM event_orgs WHERE event_uri = $1", urid)
 	if err != nil {
 		return nil, huma.Error422UnprocessableEntity(err.Error())
 	}
