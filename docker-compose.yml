@@ -12,6 +12,8 @@ services:
       - postgres-db:/var/lib/postgresql/data
   web:
     container_name: hjam-web
+    depends_on:
+      - db
     build: .
     env_file:
       - .env
