@@ -48,8 +48,8 @@ func Route(api huma.API, db *sql.DB) {
 
 	huma.Register(api, huma.Operation{
 		OperationID: "edit-event",
-		Method:      http.MethodPost,
-		Path:        "/api/event/{urid}/edit",
+		Method:      http.MethodPatch,
+		Path:        "/api/event/{urid}",
 		Summary:     "Редактировать событие",
 		Tags:        []string{"События"},
 	}, func(ctx context.Context, input *events.EventEditInput) (*events.FullEventOutput, error) {
@@ -90,7 +90,7 @@ func Route(api huma.API, db *sql.DB) {
 
 	huma.Register(api, huma.Operation{
 		OperationID: "get-curr-user-events",
-		Method:      http.MethodPost,
+		Method:      http.MethodGet,
 		Path:        "/api/user-events",
 		Summary:     "События текущего пользователя",
 		Tags:        []string{"События и пользователи"},

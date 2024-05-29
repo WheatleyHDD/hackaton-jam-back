@@ -33,7 +33,7 @@ func Route(api huma.API, db *sql.DB) {
 
 	huma.Register(api, huma.Operation{
 		OperationID:   "logout",
-		Method:        http.MethodPost,
+		Method:        http.MethodDelete,
 		Path:          "/api/logout",
 		Summary:       "Выход из аккаунта",
 		Tags:          []string{"Авторизация"},
