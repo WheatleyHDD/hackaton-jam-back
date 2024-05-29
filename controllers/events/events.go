@@ -105,7 +105,7 @@ func getFullEventInfo(urid string, db *sql.DB) (*FullEventOutput, error) {
 	)
 	if err != nil {
 		log.Println(err.Error())
-		return nil, huma.Error403Forbidden("Пользователь не найден")
+		return nil, huma.Error422UnprocessableEntity(err.Error())
 	}
 
 	event.Body.Prize = prize.String
