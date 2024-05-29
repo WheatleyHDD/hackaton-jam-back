@@ -171,9 +171,9 @@ ALTER TABLE "event_partners" ADD CONSTRAINT "event_partners_fk0" FOREIGN KEY ("e
 
 
 -- Пробные данные
-INSERT INTO "users" ("email", "username", "first_name", "last_name", "password", "perms") VALUES ("thatmaidguy1@ya.ru", "admin", "Админ", "Админов", "", 10);
-INSERT INTO "users" ("email", "username", "first_name", "last_name", "password", "perms") VALUES ("thatmaidguy2@ya.ru", "organizator", "Организатор", "Организаторов", "", 1);
-INSERT INTO "users" ("email", "username", "first_name", "last_name", "password", "perms") VALUES ("thatmaidguy3@ya.ru", "user", "Иван", "Иванов", "", 0);
+INSERT INTO "users" ("email", "username", "first_name", "last_name", "password", "perms") VALUES ("thatmaidguy1@ya.ru", "admin", "Админ", "Админов", "$2a$10$DmTlEGzS/Ix0JFfTT3hmH.ZLliSvSMRlkTBVoo2F6uBZiQwXP1YVy", 10);
+INSERT INTO "users" ("email", "username", "first_name", "last_name", "password", "perms") VALUES ("thatmaidguy2@ya.ru", "organizator", "Организатор", "Организаторов", "$2a$10$DmTlEGzS/Ix0JFfTT3hmH.ZLliSvSMRlkTBVoo2F6uBZiQwXP1YVy", 1);
+INSERT INTO "users" ("email", "username", "first_name", "last_name", "password", "perms") VALUES ("thatmaidguy3@ya.ru", "user", "Иван", "Иванов", "$2a$10$DmTlEGzS/Ix0JFfTT3hmH.ZLliSvSMRlkTBVoo2F6uBZiQwXP1YVy", 0);
 
 --INSERT INTO "events" ("urid", "name", "start_time", "end_time", "prize", "location", "desc", "requirements", "icon", "is_irl", "team_requirements_type", "team_requirements_value") VALUES ("example_event", "Example Event1", "29-05-2024", "30-05-2024", "200 рублей выплот", "Екатеринбург", "Тестовое описание", "тест", "", false, 0, 5);
 --INSERT INTO "event_orgs" ("event_uri", "organizator_email") VALUES ("example_event", "thatmaidguy2@ya.ru")
