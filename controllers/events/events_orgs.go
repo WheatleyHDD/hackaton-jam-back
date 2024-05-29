@@ -3,6 +3,7 @@ package events
 import (
 	"database/sql"
 	"hackaton-jam-back/controllers/utils"
+	"log"
 	"reflect"
 	"strings"
 	"time"
@@ -243,8 +244,10 @@ func AddEventTags(input *EventTagAddDelInput, db *sql.DB) (*FullEventOutput, err
 		if err := db.QueryRow("SELECT tag FROM event_tags WHERE event_uri = $1 AND tag = $2", input.Urid, tag).Scan(&tmp); err != nil {
 			if err == sql.ErrNoRows {
 				_ = db.QueryRow("INSERT INTO event_tags (event_uri, tag) VALUES ($1, $2)", input.Urid, tag).Scan()
+			} else {
+				log.Println("тут?")
+				return nil, huma.Error422UnprocessableEntity(err.Error())
 			}
-			return nil, huma.Error422UnprocessableEntity(err.Error())
 		}
 	}
 
