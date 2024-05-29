@@ -242,15 +242,10 @@ func AddEventTags(input *EventTagAddDelInput, db *sql.DB) (*FullEventOutput, err
 		var tmp string
 		if err := db.QueryRow("SELECT tag FROM event_tags WHERE event_uri = $1 AND tag = $2", input.Urid, tag).Scan(&tmp); err != nil {
 			if err == sql.ErrNoRows {
-				continue
+				_ = db.QueryRow("INSERT INTO event_tags (event_uri, tag) VALUES ($1, $2)", input.Urid, tag).Scan()
 			}
 			return nil, huma.Error422UnprocessableEntity(err.Error())
 		}
-		if tag == tmp {
-			continue
-		}
-
-		_ = db.QueryRow("INSERT INTO event_tags (event_uri, tag) VALUES ($1, $2)", input.Urid, tag).Scan()
 	}
 
 	return getFullEventInfo(input.Urid, db)
