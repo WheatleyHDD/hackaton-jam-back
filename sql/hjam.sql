@@ -168,3 +168,11 @@ ALTER TABLE "event_blog" ADD CONSTRAINT "event_blog_fk1" FOREIGN KEY ("author") 
 ALTER TABLE "event_tags" ADD CONSTRAINT "event_tags_fk0" FOREIGN KEY ("event_uri") REFERENCES "events"("urid");
 
 ALTER TABLE "event_partners" ADD CONSTRAINT "event_partners_fk0" FOREIGN KEY ("event_uri") REFERENCES "events"("urid");
+
+
+-- Пробные данные
+INSERT INTO "users" ("email", "username", "first_name", "last_name", "password", "perms") VALUES ("thatmaidguy1@ya.ru", "admin", "Админ", "Админов", "", 10);
+INSERT INTO "users" ("email", "username", "first_name", "last_name", "password", "perms") VALUES ("thatmaidguy2@ya.ru", "organizator", "Организатор", "Организаторов", "", 1);
+INSERT INTO "users" ("email", "username", "first_name", "last_name", "password", "perms") VALUES ("thatmaidguy3@ya.ru", "user", "Иван", "Иванов", "", 0);
+
+INSERT INTO "events" ("urid", "name", "start_time", "end_time", "prize", "location", "desc", "requirements", "icon", "is_irl", "team_requirements_type", "team_requirements_value") VALUES ("", "", "", "", "", "", "", "", "", "", "", "");
