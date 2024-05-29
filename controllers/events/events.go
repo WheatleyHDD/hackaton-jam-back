@@ -12,7 +12,7 @@ import (
 type GetEventsOutput struct {
 	Body struct {
 		Count  int         `json:"count" doc:"Количество мероприятий всего"`
-		Events []EventType `json:"urid" doc:"Список мероприятий"`
+		Events []EventType `json:"events" doc:"Список мероприятий"`
 	}
 }
 
