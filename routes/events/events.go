@@ -113,4 +113,44 @@ func Route(api huma.API, db *sql.DB) {
 
 		return events.GetAllJoinedEvents(user.Email, db)
 	})
+
+	huma.Register(api, huma.Operation{
+		OperationID: "tag-add-event",
+		Method:      http.MethodPut,
+		Path:        "/api/event/{urid}/tags",
+		Summary:     "Добавить тэги",
+		Tags:        []string{"Теги событий"},
+	}, func(ctx context.Context, input *events.EventTagAddDelInput) (*events.FullEventOutput, error) {
+		return events.AddEventTags(input, db)
+	})
+
+	huma.Register(api, huma.Operation{
+		OperationID: "tag-del-event",
+		Method:      http.MethodDelete,
+		Path:        "/api/event/{urid}/tags",
+		Summary:     "Удалить тэги",
+		Tags:        []string{"Теги событий"},
+	}, func(ctx context.Context, input *events.EventTagAddDelInput) (*events.FullEventOutput, error) {
+		return events.DelEventTags(input, db)
+	})
+
+	huma.Register(api, huma.Operation{
+		OperationID: "partners-add-event",
+		Method:      http.MethodPut,
+		Path:        "/api/event/{urid}/partners",
+		Summary:     "Добавить партнеров",
+		Tags:        []string{"Партнеры событий"},
+	}, func(ctx context.Context, input *events.EventPartnersAddDelInput) (*events.FullEventOutput, error) {
+		return events.AddEventPartners(input, db)
+	})
+
+	huma.Register(api, huma.Operation{
+		OperationID: "partners-del-event",
+		Method:      http.MethodDelete,
+		Path:        "/api/event/{urid}/partners",
+		Summary:     "Удалить партнеров",
+		Tags:        []string{"Партнеры событий"},
+	}, func(ctx context.Context, input *events.EventPartnersAddDelInput) (*events.FullEventOutput, error) {
+		return events.DelEventPartners(input, db)
+	})
 }

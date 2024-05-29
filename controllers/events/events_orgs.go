@@ -30,13 +30,6 @@ type EventCreationInput struct {
 	}
 }
 
-type EventPartnersAddInput struct {
-	Body struct {
-		Token    string   `json:"access_token" example:"82a3682d0d56f40a4d088aee08521663" doc:"Токен пользователя"`
-		Partners []string `json:"partners" doc:"Партнеры события"`
-	}
-}
-
 type EventDeleteInput struct {
 	Urid string `path:"urid" maxLength:"30" example:"example_events" doc:"Ссылка на мероприятие"`
 
@@ -197,6 +190,14 @@ func DeleteEvent(input *EventDeleteInput, db *sql.DB) (*DeleteEventOutput, error
 	if err != nil {
 		result.Body.Errors = append(result.Body.Errors, err.Error())
 	}
+	_, err = db.Query("DELETE FROM event_tags WHERE event_uri=$1", input.Urid)
+	if err != nil {
+		result.Body.Errors = append(result.Body.Errors, err.Error())
+	}
+	_, err = db.Query("DELETE FROM event_partners WHERE event_uri=$1", input.Urid)
+	if err != nil {
+		result.Body.Errors = append(result.Body.Errors, err.Error())
+	}
 	_, err = db.Query("DELETE FROM events WHERE urid=$1", input.Urid)
 	if err != nil {
 		result.Body.Errors = append(result.Body.Errors, err.Error())
@@ -285,7 +286,7 @@ type EventPartnersAddDelInput struct {
 	Urid string `path:"urid" maxLength:"30" example:"example_events" doc:"Ссылка на мероприятие"`
 	Body struct {
 		Token    string   `json:"access_token" example:"82a3682d0d56f40a4d088aee08521663" doc:"Токен пользователя"`
-		Partners []string `json:"partners" doc:"Тэги события"`
+		Partners []string `json:"partners" doc:"Партнеры событий"`
 	}
 }
 
