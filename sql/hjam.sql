@@ -1,105 +1,170 @@
-CREATE TABLE IF NOT EXISTS "users" (
-	"email" text NOT NULL UNIQUE,
-	"username" text NOT NULL,
-	"avatar" text,
-	"first_name" text NOT NULL,
-	"last_name" text NOT NULL,
-	"middle_name" text,
-	"password" text NOT NULL,
-	"about" text,
-	"work_place" text,
-	"work_time" text,
-	"loc" text,
-	"perms" bigint NOT NULL DEFAULT '0',
-	PRIMARY KEY ("email")
+CREATE TABLE "public.users" (
+	"email" varchar(255) NOT NULL,
+	"username" varchar(255) NOT NULL,
+	"avatar" varchar(255) NOT NULL DEFAULT 'https://i.imgur.com/b0zqmkj.jpeg',
+	"first_name" varchar(255) NOT NULL,
+	"last_name" varchar(255) NOT NULL,
+	"middle_name" varchar(255),
+	"password" varchar(255) NOT NULL,
+	"about" TEXT,
+	"work_place" varchar(255),
+	"work_time" varchar(255),
+	"loc" varchar(255),
+	"perms" int NOT NULL DEFAULT 0,
+	CONSTRAINT "users_pk" PRIMARY KEY ("email")
+) WITH (
+  OIDS=FALSE
 );
 
-CREATE TABLE IF NOT EXISTS "skills" (
-	"user_email" text NOT NULL UNIQUE,
-	"skill" text NOT NULL,
-	PRIMARY KEY ("user_email")
+
+
+CREATE TABLE "public.tokens" (
+	"token" varchar(255) NOT NULL,
+	"user_email" varchar(255) NOT NULL,
+	CONSTRAINT "tokens_pk" PRIMARY KEY ("token")
+) WITH (
+  OIDS=FALSE
 );
 
-CREATE TABLE IF NOT EXISTS "contacts" (
-	"user_email" text NOT NULL UNIQUE,
-	"contact_link" text NOT NULL,
-	PRIMARY KEY ("user_email")
+
+
+CREATE TABLE "public.skills" (
+	"user_email" varchar(255) NOT NULL,
+	"skill" varchar(255) NOT NULL,
+	CONSTRAINT "skills_pk" PRIMARY KEY ("user_email")
+) WITH (
+  OIDS=FALSE
 );
 
-CREATE TABLE IF NOT EXISTS "events" (
-	"urid" text NOT NULL UNIQUE,
-	"id" bigserial NOT NULL UNIQUE,
-	"name" text NOT NULL,
+
+
+CREATE TABLE "public.contacts" (
+	"user_email" varchar(255) NOT NULL,
+	"contact_link" varchar(255) NOT NULL,
+	CONSTRAINT "contacts_pk" PRIMARY KEY ("user_email")
+) WITH (
+  OIDS=FALSE
+);
+
+
+
+CREATE TABLE "public.teams" (
+	"id" serial NOT NULL,
+	"name" varchar(255) NOT NULL UNIQUE DEFAULT 'Без названия',
+	CONSTRAINT "teams_pk" PRIMARY KEY ("id")
+) WITH (
+  OIDS=FALSE
+);
+
+
+
+CREATE TABLE "public.teams_members" (
+	"team_id" bigint NOT NULL,
+	"member_email" varchar(255) NOT NULL,
+	"role" varchar(255) NOT NULL,
+	CONSTRAINT "teams_members_pk" PRIMARY KEY ("team_id")
+) WITH (
+  OIDS=FALSE
+);
+
+
+
+CREATE TABLE "public.events" (
+	"urid" varchar(255) NOT NULL,
+	"id" serial NOT NULL,
+	"name" varchar(255) NOT NULL,
 	"start_time" timestamp with time zone NOT NULL,
 	"end_time" timestamp with time zone NOT NULL,
-	"prize" text,
-	"location" text,
-	"desc" text NOT NULL,
-	"requirements" text,
-	"partners" text,
-	"icon" text,
-	"is_irl" boolean NOT NULL DEFAULT false,
-	"team_requirements_type" bigint NOT NULL,
-	"team_requirements_value" bigint NOT NULL,
-	PRIMARY KEY ("urid")
-);
-
-CREATE TABLE IF NOT EXISTS "event_members" (
-	"event_uri" text NOT NULL,
-	"member_email" text NOT NULL,
-	PRIMARY KEY ("event_uri")
-);
-
-CREATE TABLE IF NOT EXISTS "event_orgs" (
-	"event_uri" text NOT NULL,
-	"organizator_email" text NOT NULL,
-	PRIMARY KEY ("event_uri")
-);
-
-CREATE TABLE IF NOT EXISTS "event_blog" (
-	"id" bigint GENERATED ALWAYS AS IDENTITY NOT NULL UNIQUE,
-	"event_uri" text NOT NULL,
-	"title" text NOT NULL,
-	"author" text NOT NULL,
-	"post_date" date NOT NULL,
-	"post_text" text NOT NULL,
-	PRIMARY KEY ("id")
-);
-
-CREATE TABLE IF NOT EXISTS "tokens" (
-	"token" text NOT NULL UNIQUE,
-	"user_email" text NOT NULL,
-	PRIMARY KEY ("token")
-);
-
-CREATE TABLE IF NOT EXISTS "teams" (
-	"id" bigint GENERATED ALWAYS AS IDENTITY NOT NULL UNIQUE,
-	"name" text NOT NULL DEFAULT 'Без названия',
-	PRIMARY KEY ("id")
-);
-
-CREATE TABLE IF NOT EXISTS "teams_members" (
-	"team_id" bigint GENERATED ALWAYS AS IDENTITY NOT NULL UNIQUE,
-	"member_email" text NOT NULL,
-	"role" text NOT NULL,
-	PRIMARY KEY ("team_id")
+	"prize" varchar(255),
+	"location" varchar(255),
+	"desc" TEXT NOT NULL,
+	"requirements" TEXT,
+	"icon" varchar(255),
+	"is_irl" bool NOT NULL DEFAULT 'false',
+	"team_requirements_type" int NOT NULL DEFAULT '0',
+	"team_requirements_value" int NOT NULL DEFAULT '5',
+	CONSTRAINT "events_pk" PRIMARY KEY ("urid")
+) WITH (
+  OIDS=FALSE
 );
 
 
-ALTER TABLE "skills" ADD CONSTRAINT "skills_fk0" FOREIGN KEY ("user_email") REFERENCES "users"("email");
-ALTER TABLE "contacts" ADD CONSTRAINT "contacts_fk0" FOREIGN KEY ("user_email") REFERENCES "users"("email");
 
-ALTER TABLE "event_members" ADD CONSTRAINT "event_members_fk0" FOREIGN KEY ("event_uri") REFERENCES "events"("urid");
+CREATE TABLE "public.event_orgs" (
+	"event_uri" varchar(255) NOT NULL,
+	"organizator_email" varchar(255) NOT NULL,
+	CONSTRAINT "event_orgs_pk" PRIMARY KEY ("event_uri")
+) WITH (
+  OIDS=FALSE
+);
 
-ALTER TABLE "event_members" ADD CONSTRAINT "event_members_fk1" FOREIGN KEY ("member_email") REFERENCES "users"("email");
-ALTER TABLE "event_orgs" ADD CONSTRAINT "event_orgs_fk0" FOREIGN KEY ("event_uri") REFERENCES "events"("urid");
 
-ALTER TABLE "event_orgs" ADD CONSTRAINT "event_orgs_fk1" FOREIGN KEY ("organizator_email") REFERENCES "users"("email");
-ALTER TABLE "event_blog" ADD CONSTRAINT "event_blog_fk1" FOREIGN KEY ("event_uri") REFERENCES "events"("urid");
 
-ALTER TABLE "event_blog" ADD CONSTRAINT "event_blog_fk3" FOREIGN KEY ("author") REFERENCES "users"("email");
-ALTER TABLE "tokens" ADD CONSTRAINT "tokens_fk1" FOREIGN KEY ("user_email") REFERENCES "users"("email");
+CREATE TABLE "public.event_members" (
+	"event_uri" varchar(255) NOT NULL,
+	"member_email" varchar(255) NOT NULL,
+	CONSTRAINT "event_members_pk" PRIMARY KEY ("event_uri")
+) WITH (
+  OIDS=FALSE
+);
 
-ALTER TABLE "teams_members" ADD CONSTRAINT "teams_members_fk0" FOREIGN KEY ("team_id") REFERENCES "teams"("id");
 
-ALTER TABLE "teams_members" ADD CONSTRAINT "teams_members_fk1" FOREIGN KEY ("member_email") REFERENCES "users"("email");
+
+CREATE TABLE "public.event_blog" (
+	"id" serial NOT NULL,
+	"event_uri" varchar(255) NOT NULL,
+	"title" varchar(255) NOT NULL,
+	"author" varchar(255) NOT NULL,
+	"post_date" DATE NOT NULL,
+	"post_text" TEXT NOT NULL,
+	CONSTRAINT "event_blog_pk" PRIMARY KEY ("id")
+) WITH (
+  OIDS=FALSE
+);
+
+
+
+CREATE TABLE "public.event_tags" (
+	"event_uri" varchar(255) NOT NULL,
+	"tag" varchar(255) NOT NULL,
+	CONSTRAINT "event_tags_pk" PRIMARY KEY ("event_uri")
+) WITH (
+  OIDS=FALSE
+);
+
+
+
+CREATE TABLE "public.event_partners" (
+	"event_uri" varchar(255) NOT NULL,
+	"logo_url" varchar(255) NOT NULL,
+	CONSTRAINT "event_partners_pk" PRIMARY KEY ("event_uri")
+) WITH (
+  OIDS=FALSE
+);
+
+
+
+
+ALTER TABLE "public.tokens" ADD CONSTRAINT "tokens_fk0" FOREIGN KEY ("user_email") REFERENCES "public.users"("email");
+
+ALTER TABLE "public.skills" ADD CONSTRAINT "skills_fk0" FOREIGN KEY ("user_email") REFERENCES "public.users"("email");
+
+ALTER TABLE "public.contacts" ADD CONSTRAINT "contacts_fk0" FOREIGN KEY ("user_email") REFERENCES "public.users"("email");
+
+
+ALTER TABLE "public.teams_members" ADD CONSTRAINT "teams_members_fk0" FOREIGN KEY ("team_id") REFERENCES "public.teams"("id");
+ALTER TABLE "public.teams_members" ADD CONSTRAINT "teams_members_fk1" FOREIGN KEY ("member_email") REFERENCES "public.users"("email");
+
+
+ALTER TABLE "public.event_orgs" ADD CONSTRAINT "event_orgs_fk0" FOREIGN KEY ("event_uri") REFERENCES "public.events"("urid");
+ALTER TABLE "public.event_orgs" ADD CONSTRAINT "event_orgs_fk1" FOREIGN KEY ("organizator_email") REFERENCES "public.users"("email");
+
+ALTER TABLE "public.event_members" ADD CONSTRAINT "event_members_fk0" FOREIGN KEY ("event_uri") REFERENCES "public.events"("urid");
+ALTER TABLE "public.event_members" ADD CONSTRAINT "event_members_fk1" FOREIGN KEY ("member_email") REFERENCES "public.users"("email");
+
+ALTER TABLE "public.event_blog" ADD CONSTRAINT "event_blog_fk0" FOREIGN KEY ("event_uri") REFERENCES "public.events"("urid");
+ALTER TABLE "public.event_blog" ADD CONSTRAINT "event_blog_fk1" FOREIGN KEY ("author") REFERENCES "public.users"("email");
+
+ALTER TABLE "public.event_tags" ADD CONSTRAINT "event_tags_fk0" FOREIGN KEY ("event_uri") REFERENCES "public.events"("urid");
+
+ALTER TABLE "public.event_partners" ADD CONSTRAINT "event_partners_fk0" FOREIGN KEY ("event_uri") REFERENCES "public.events"("urid");

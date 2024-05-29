@@ -24,6 +24,7 @@ type EventType struct {
 	Location  string    `json:"location" example:"Свердловская область, г. Екатеринбург" doc:"Место проведения"`
 	Icon      string    `json:"icon" doc:"Превью мероприятия"`
 	IsIrl     bool      `json:"is_irl" doc:"Очное ли мероприятие?"`
+	Tags      []string  `json:"tags" doc:"Тэги события"`
 }
 
 func GetEventCount(db *sql.DB) (int, error) {
@@ -48,11 +49,18 @@ func GetAllEvents(count int, page int, db *sql.DB) (*GetEventsOutput, error) {
 	var events []EventType
 
 	for rows.Next() {
+
 		var id int
 		var event EventType
 		if err := rows.Scan(&event.Urid, &id, &event.Name, &event.StartTime, &event.EndTime, &event.Location); err != nil {
 			return nil, huma.Error422UnprocessableEntity(err.Error())
 		}
+
+		event.Tags, err = getEventTags(event.Urid, db)
+		if err != nil {
+			return nil, huma.Error422UnprocessableEntity(err.Error())
+		}
+
 		events = append(events, event)
 	}
 	if err = rows.Err(); err != nil {
@@ -85,7 +93,6 @@ func getFullEventInfo(urid string, db *sql.DB) (*FullEventOutput, error) {
 	var prize sql.NullString
 	var location sql.NullString
 	var requirements sql.NullString
-	var partners sql.NullString
 	var icon sql.NullString
 	var desc sql.NullString
 
@@ -99,7 +106,6 @@ func getFullEventInfo(urid string, db *sql.DB) (*FullEventOutput, error) {
 		&location,
 		&desc,
 		&requirements,
-		&partners,
 		&icon,
 		&event.Body.IsIrl,
 		&event.Body.TeamRequirementsType,
@@ -113,9 +119,18 @@ func getFullEventInfo(urid string, db *sql.DB) (*FullEventOutput, error) {
 	event.Body.Prize = prize.String
 	event.Body.Location = location.String
 	event.Body.Requirements = requirements.String
-	event.Body.Partners = partners.String
 	event.Body.Icon = icon.String
 	event.Body.Description = desc.String
+
+	event.Body.Tags, err = getEventTags(urid, db)
+	if err != nil {
+		return nil, huma.Error422UnprocessableEntity(err.Error())
+	}
+
+	event.Body.Partners, err = getEventPartners(urid, db)
+	if err != nil {
+		return nil, huma.Error422UnprocessableEntity(err.Error())
+	}
 
 	event.Body.Organizators, err = getEventOrganizators(urid, db)
 	if err != nil {
@@ -150,6 +165,52 @@ func getEventOrganizators(urid string, db *sql.DB) ([]*Organizators, error) {
 		org.Username = user.Username
 
 		result = append(result, org)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, huma.Error422UnprocessableEntity(err.Error())
+	}
+
+	return result, nil
+}
+
+func getEventTags(urid string, db *sql.DB) ([]string, error) {
+	rows, err := db.Query("SELECT tag FROM event_tags WHERE event_uri = $1", urid)
+	if err != nil {
+		return nil, huma.Error422UnprocessableEntity(err.Error())
+	}
+	defer rows.Close()
+
+	var result []string
+
+	for rows.Next() {
+		var tag string
+		if err := rows.Scan(&tag); err != nil {
+			return nil, huma.Error422UnprocessableEntity(err.Error())
+		}
+		result = append(result, tag)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, huma.Error422UnprocessableEntity(err.Error())
+	}
+
+	return result, nil
+}
+
+func getEventPartners(urid string, db *sql.DB) ([]string, error) {
+	rows, err := db.Query("SELECT logo_url FROM event_partners WHERE event_uri = $1", urid)
+	if err != nil {
+		return nil, huma.Error422UnprocessableEntity(err.Error())
+	}
+	defer rows.Close()
+
+	var result []string
+
+	for rows.Next() {
+		var logoUrl string
+		if err := rows.Scan(&logoUrl); err != nil {
+			return nil, huma.Error422UnprocessableEntity(err.Error())
+		}
+		result = append(result, logoUrl)
 	}
 	if err = rows.Err(); err != nil {
 		return nil, huma.Error422UnprocessableEntity(err.Error())

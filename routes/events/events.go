@@ -57,6 +57,16 @@ func Route(api huma.API, db *sql.DB) {
 	})
 
 	huma.Register(api, huma.Operation{
+		OperationID: "del-event",
+		Method:      http.MethodDelete,
+		Path:        "/api/event/{urid}",
+		Summary:     "Удалить событие",
+		Tags:        []string{"События"},
+	}, func(ctx context.Context, input *events.EventDeleteInput) (*events.DeleteEventOutput, error) {
+		return events.DeleteEvent(input, db)
+	})
+
+	huma.Register(api, huma.Operation{
 		OperationID: "join-event",
 		Method:      http.MethodPost,
 		Path:        "/api/event/{urid}/join",

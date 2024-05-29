@@ -26,8 +26,22 @@ type EventCreationInput struct {
 
 		Description  string `json:"desc,omitempty" doc:"Описание мероприятия"`
 		Prize        string `json:"prize,omitempty" doc:"Призы мероприятия"`
-		Partners     string `json:"partners,omitempty" doc:"Партнеры мероприятия"`
 		Requirements string `json:"requirements,omitempty" doc:"Необходимые навыки для мероприятия"`
+	}
+}
+
+type EventPartnersAddInput struct {
+	Body struct {
+		Token    string   `json:"access_token" example:"82a3682d0d56f40a4d088aee08521663" doc:"Токен пользователя"`
+		Partners []string `json:"partners" doc:"Партнеры события"`
+	}
+}
+
+type EventDeleteInput struct {
+	Urid string `path:"urid" maxLength:"30" example:"example_events" doc:"Ссылка на мероприятие"`
+
+	Body struct {
+		Token string `json:"access_token" example:"82a3682d0d56f40a4d088aee08521663" doc:"Токен пользователя"`
 	}
 }
 
@@ -68,13 +82,20 @@ type FullEventOutput struct {
 		Description           string    `json:"desc" doc:"Описание мероприятия"`
 		Prize                 string    `json:"prize" doc:"Призы мероприятия"`
 		Requirements          string    `json:"requirements" doc:"Необходимые навыки для мероприятия"`
-		Partners              string    `json:"partners" doc:"Партнеры мероприятия"`
+		Partners              []string  `json:"partners" doc:"Партнеры мероприятия"`
 		Icon                  string    `json:"icon" doc:"Превью мероприятия"`
 		IsIrl                 bool      `json:"is_irl" doc:"Очное ли мероприятие?"`
 		TeamRequirementsType  int       `json:"team_requirements_type" doc:"Тип равенства требования к количеству сокомандников"`
 		TeamRequirementsValue int       `json:"team_requirements_value" doc:"Количество сокомандников"`
 
+		Tags         []string        `json:"tags" doc:"Тэги события"`
 		Organizators []*Organizators `json:"organisators" doc:"Список организаторов"`
+	}
+}
+
+type DeleteEventOutput struct {
+	Body struct {
+		Errors []string `json:"errors" doc:"Список ошибок"`
 	}
 }
 
@@ -91,14 +112,12 @@ func CreateEvent(input *EventCreationInput, db *sql.DB) (*FullEventOutput, error
 	// Запись в базу
 	_, err = db.Query("INSERT INTO events ("+
 		"urid, name, start_time, end_time, prize, \"location\", \"desc\", requirements, "+
-		"partners, icon, is_irl, team_requirements_type, team_requirements_value) "+
+		"icon, is_irl, team_requirements_type, team_requirements_value) "+
 		"VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)",
 
-		input.Body.Urid, input.Body.Name,
-		input.Body.StartTime, input.Body.EndTime,
-		input.Body.Prize, input.Body.Location,
-		input.Body.Description, input.Body.Requirements,
-		input.Body.Partners, input.Body.Icon, input.Body.IsIrl,
+		input.Body.Urid, input.Body.Name, input.Body.StartTime, input.Body.EndTime,
+		input.Body.Prize, input.Body.Location, input.Body.Description,
+		input.Body.Requirements, input.Body.Icon, input.Body.IsIrl,
 		input.Body.TeamRequirementsType, input.Body.TeamRequirementsValue,
 	)
 	if err != nil {
@@ -143,6 +162,115 @@ func EditEvent(input *EventEditInput, db *sql.DB) (*FullEventOutput, error) {
 		//                                                                               дебилизм ^                                  идиотизм ^
 		if err != nil {
 			return nil, huma.Error403Forbidden(err.Error())
+		}
+	}
+
+	return getFullEventInfo(input.Urid, db)
+}
+
+func DeleteEvent(input *EventDeleteInput, db *sql.DB) (*DeleteEventOutput, error) {
+	// Проверить можем ли создать меро?
+	user, err := utils.GetUserEmailByToken(input.Body.Token, db)
+	if err != nil {
+		return nil, huma.Error403Forbidden("Пользователь не найден")
+	}
+	if user.Perms != 10 {
+		if err := db.QueryRow("SELECT * FROM event_orgs WHERE organizator_email = $1 AND event_uri = $2", user.Email, input.Urid).Scan(); err != nil {
+			if err == sql.ErrNoRows {
+				return nil, huma.Error403Forbidden("Это не твое мероприятие :/")
+			}
+			return nil, huma.Error422UnprocessableEntity(err.Error())
+		}
+	}
+
+	result := new(DeleteEventOutput)
+
+	// Удалить все
+	_, err = db.Query("DELETE FROM event_orgs WHERE event_uri=$1", input.Urid)
+	if err != nil {
+		result.Body.Errors = append(result.Body.Errors, err.Error())
+	}
+	_, err = db.Query("DELETE FROM event_blog WHERE event_uri=$1", input.Urid)
+	if err != nil {
+		result.Body.Errors = append(result.Body.Errors, err.Error())
+	}
+	_, err = db.Query("DELETE FROM event_members WHERE event_uri=$1", input.Urid)
+	if err != nil {
+		result.Body.Errors = append(result.Body.Errors, err.Error())
+	}
+	_, err = db.Query("DELETE FROM events WHERE urid=$1", input.Urid)
+	if err != nil {
+		result.Body.Errors = append(result.Body.Errors, err.Error())
+	}
+
+	return result, nil
+}
+
+// / ============================================
+// / ============================================
+// / ================ Тэги ======================
+// / ============================================
+// / ============================================
+type EventTagAddDelInput struct {
+	Urid string `path:"urid" maxLength:"30" example:"example_events" doc:"Ссылка на мероприятие"`
+	Body struct {
+		Token string   `json:"access_token" example:"82a3682d0d56f40a4d088aee08521663" doc:"Токен пользователя"`
+		Tags  []string `json:"tags" doc:"Тэги события"`
+	}
+}
+
+func AddEventTags(input *EventTagAddDelInput, db *sql.DB) (*FullEventOutput, error) {
+	// Проверить наша ли меро?
+	user, err := utils.GetUserEmailByToken(input.Body.Token, db)
+	if err != nil {
+		return nil, huma.Error403Forbidden("Пользователь не найден")
+	}
+
+	if user.Perms != 10 {
+		if err := db.QueryRow("SELECT * FROM event_orgs WHERE organizator_email = $1 AND event_uri = $2", user.Email, input.Urid).Scan(); err != nil {
+			if err == sql.ErrNoRows {
+				return nil, huma.Error403Forbidden("Это не твое мероприятие :/")
+			}
+			return nil, huma.Error422UnprocessableEntity(err.Error())
+		}
+	}
+
+	for tag := range input.Body.Tags {
+		if err := db.QueryRow("INSERT INTO event_tags (event_uri, tag) VALUES ($1, $2)", input.Urid, tag).Scan(); err != nil {
+			return nil, huma.Error422UnprocessableEntity(err.Error())
+		}
+	}
+
+	return getFullEventInfo(input.Urid, db)
+}
+
+func DelEventTags(input *EventTagAddDelInput, db *sql.DB) (*FullEventOutput, error) {
+	// Проверить наша ли меро?
+	user, err := utils.GetUserEmailByToken(input.Body.Token, db)
+	if err != nil {
+		return nil, huma.Error403Forbidden("Пользователь не найден")
+	}
+
+	if user.Perms != 10 {
+		if err := db.QueryRow("SELECT * FROM event_orgs WHERE organizator_email = $1 AND event_uri = $2", user.Email, input.Urid).Scan(); err != nil {
+			if err == sql.ErrNoRows {
+				return nil, huma.Error403Forbidden("Это не твое мероприятие :/")
+			}
+			return nil, huma.Error422UnprocessableEntity(err.Error())
+		}
+	}
+
+	for tag := range input.Body.Tags {
+		if err := db.QueryRow("SELECT * FROM event_tags WHERE event_uri = $1 AND tag = $2", input.Urid, tag).Scan(); err != nil {
+			if err == sql.ErrNoRows {
+				continue
+			}
+			return nil, huma.Error422UnprocessableEntity(err.Error())
+		}
+
+		_, err = db.Query("DELETE FROM event_tags WHERE event_uri=$1 AND tag=$2", input.Urid, tag)
+		if err != nil {
+			return nil, huma.Error422UnprocessableEntity(err.Error())
 		}
 	}
 
