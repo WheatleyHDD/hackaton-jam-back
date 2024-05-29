@@ -175,4 +175,6 @@ INSERT INTO "users" ("email", "username", "first_name", "last_name", "password",
 INSERT INTO "users" ("email", "username", "first_name", "last_name", "password", "perms") VALUES ("thatmaidguy2@ya.ru", "organizator", "Организатор", "Организаторов", "", 1);
 INSERT INTO "users" ("email", "username", "first_name", "last_name", "password", "perms") VALUES ("thatmaidguy3@ya.ru", "user", "Иван", "Иванов", "", 0);
 
-INSERT INTO "events" ("urid", "name", "start_time", "end_time", "prize", "location", "desc", "requirements", "icon", "is_irl", "team_requirements_type", "team_requirements_value") VALUES ("", "", "", "", "", "", "", "", "", "", "", "");
+--INSERT INTO "events" ("urid", "name", "start_time", "end_time", "prize", "location", "desc", "requirements", "icon", "is_irl", "team_requirements_type", "team_requirements_value") VALUES ("example_event", "Example Event1", "29-05-2024", "30-05-2024", "200 рублей выплот", "Екатеринбург", "Тестовое описание", "тест", "", false, 0, 5);
+--INSERT INTO "event_orgs" ("event_uri", "organizator_email") VALUES ("example_event", "thatmaidguy2@ya.ru")
+--INSERT INTO "event_orgs" ("event_uri", "organizator_email") VALUES ("example_event", "thatmaidguy2@ya.ru")
