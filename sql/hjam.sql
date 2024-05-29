@@ -10,7 +10,7 @@ CREATE TABLE "users" (
 	"work_place" varchar(255),
 	"work_time" varchar(255),
 	"loc" varchar(255),
-	"perms" int NOT NULL DEFAULT 0,
+	"perms" int NOT NULL DEFAULT '0',
 	CONSTRAINT "users_pk" PRIMARY KEY ("email")
 ) WITH (
   OIDS=FALSE
@@ -30,8 +30,7 @@ CREATE TABLE "tokens" (
 
 CREATE TABLE "skills" (
 	"user_email" varchar(255) NOT NULL,
-	"skill" varchar(255) NOT NULL,
-	CONSTRAINT "skills_pk" PRIMARY KEY ("user_email")
+	"skill" varchar(255) NOT NULL
 ) WITH (
   OIDS=FALSE
 );
@@ -40,8 +39,7 @@ CREATE TABLE "skills" (
 
 CREATE TABLE "contacts" (
 	"user_email" varchar(255) NOT NULL,
-	"contact_link" varchar(255) NOT NULL,
-	CONSTRAINT "contacts_pk" PRIMARY KEY ("user_email")
+	"contact_link" varchar(255) NOT NULL
 ) WITH (
   OIDS=FALSE
 );
@@ -61,8 +59,7 @@ CREATE TABLE "teams" (
 CREATE TABLE "teams_members" (
 	"team_id" bigint NOT NULL,
 	"member_email" varchar(255) NOT NULL,
-	"role" varchar(255) NOT NULL,
-	CONSTRAINT "teams_members_pk" PRIMARY KEY ("team_id")
+	"role" varchar(255) NOT NULL
 ) WITH (
   OIDS=FALSE
 );
@@ -92,8 +89,7 @@ CREATE TABLE "events" (
 
 CREATE TABLE "event_orgs" (
 	"event_uri" varchar(255) NOT NULL,
-	"organizator_email" varchar(255) NOT NULL,
-	CONSTRAINT "event_orgs_pk" PRIMARY KEY ("event_uri")
+	"organizator_email" varchar(255) NOT NULL
 ) WITH (
   OIDS=FALSE
 );
@@ -102,8 +98,7 @@ CREATE TABLE "event_orgs" (
 
 CREATE TABLE "event_members" (
 	"event_uri" varchar(255) NOT NULL,
-	"member_email" varchar(255) NOT NULL,
-	CONSTRAINT "event_members_pk" PRIMARY KEY ("event_uri")
+	"member_email" varchar(255) NOT NULL
 ) WITH (
   OIDS=FALSE
 );
@@ -126,8 +121,7 @@ CREATE TABLE "event_blog" (
 
 CREATE TABLE "event_tags" (
 	"event_uri" varchar(255) NOT NULL,
-	"tag" varchar(255) NOT NULL,
-	CONSTRAINT "event_tags_pk" PRIMARY KEY ("event_uri")
+	"tag" varchar(255) NOT NULL
 ) WITH (
   OIDS=FALSE
 );
@@ -136,8 +130,7 @@ CREATE TABLE "event_tags" (
 
 CREATE TABLE "event_partners" (
 	"event_uri" varchar(255) NOT NULL,
-	"logo_url" varchar(255) NOT NULL,
-	CONSTRAINT "event_partners_pk" PRIMARY KEY ("event_uri")
+	"logo_url" varchar(255) NOT NULL
 ) WITH (
   OIDS=FALSE
 );
@@ -175,6 +168,12 @@ INSERT INTO "users" ("email", "username", "first_name", "last_name", "password",
 INSERT INTO "users" ("email", "username", "first_name", "last_name", "password", "perms") VALUES ('thatmaidguy2@ya.ru', 'organizator', 'Организатор', 'Организаторов', '$2a$10$DmTlEGzS/Ix0JFfTT3hmH.ZLliSvSMRlkTBVoo2F6uBZiQwXP1YVy', 1);
 INSERT INTO "users" ("email", "username", "first_name", "last_name", "password", "perms") VALUES ('thatmaidguy3@ya.ru', 'user', 'Иван', 'Иванов', '$2a$10$DmTlEGzS/Ix0JFfTT3hmH.ZLliSvSMRlkTBVoo2F6uBZiQwXP1YVy', 0);
 
---INSERT INTO "events" ("urid", "name", "start_time", "end_time", "prize", "location", "desc", "requirements", "icon", "is_irl", "team_requirements_type", "team_requirements_value") VALUES ("example_event", "Example Event1", "29-05-2024", "30-05-2024", "200 рублей выплот", "Екатеринбург", "Тестовое описание", "тест", "", false, 0, 5);
---INSERT INTO "event_orgs" ("event_uri", "organizator_email") VALUES ("example_event", "thatmaidguy2@ya.ru")
---INSERT INTO "event_orgs" ("event_uri", "organizator_email") VALUES ("example_event", "thatmaidguy2@ya.ru")
+INSERT INTO "events" ("urid", "name", "start_time", "end_time", "prize", "location", "desc", "requirements", "icon", "is_irl", "team_requirements_type", "team_requirements_value") VALUES ('example_event', 'Example Event 1', '2022-05-20 15:00:10-09', '2022-05-21 15:00:10-09', '200 рублей выплот', 'Екатеринбург', 'Тестовое описание', 'тест', '', false, 0, 5);
+INSERT INTO "event_orgs" ("event_uri", "organizator_email") VALUES ('example_event', 'thatmaidguy2@ya.ru');
+INSERT INTO "event_tags" ("event_uri", "tag") VALUES ('example_event', 'Тег 1');
+INSERT INTO "event_tags" ("event_uri", "tag") VALUES ('example_event', 'Тег 2');
+
+INSERT INTO "events" ("urid", "name", "start_time", "end_time", "prize", "location", "desc", "requirements", "icon", "is_irl", "team_requirements_type", "team_requirements_value") VALUES ('example_event2', 'Example Event 2', '2022-05-20 15:00:10-09', '2022-05-21 15:00:10-09', '100 рублей выплот', 'Екатеринбург', 'Тестовое описание', 'тест', '', false, 0, 5);
+INSERT INTO "event_orgs" ("event_uri", "organizator_email") VALUES ('example_event2', 'thatmaidguy2@ya.ru');
+INSERT INTO "event_tags" ("event_uri", "tag") VALUES ('example_event2', 'Тег 1');
+INSERT INTO "event_tags" ("event_uri", "tag") VALUES ('example_event2', 'Тег 3');

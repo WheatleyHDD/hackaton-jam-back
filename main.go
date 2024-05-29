@@ -1,13 +1,16 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	"hackaton-jam-back/routes"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/rs/cors"
+	"github.com/tanimutomo/sqlfile"
 
 	"github.com/danielgtaylor/huma/v2/adapters/humago"
 	"github.com/danielgtaylor/huma/v2/humacli"
@@ -34,13 +37,36 @@ func main() {
 		routes.Route(api, db)
 
 		hooks.OnStart(func() {
-			if err := http.ListenAndServe(fmt.Sprintf("%s:%d", options.Ip, options.Port), handler); err != nil {
-				log.Fatalf("HTTP server error: %v", err)
+			if os.Getenv("FIRST_RUN") == "1" {
+				fmt.Println("Started migration...")
+				Migration(db)
+				defer db.Close()
+				fmt.Println("Migration ended!")
+			} else {
+				if err := http.ListenAndServe(fmt.Sprintf("%s:%d", options.Ip, options.Port), handler); err != nil {
+					log.Fatalf("HTTP server error: %v", err)
+				}
+				defer db.Close()
 			}
-			defer db.Close()
 		})
 	})
 
 	// Run the CLI. When passed no commands, it starts the server.
 	cli.Run()
+}
+func Migration(db *sql.DB) {
+	_ = db.QueryRow("DROP SCHEMA public CASCADE;" +
+		"CREATE SCHEMA public;")
+
+	s := sqlfile.New()
+
+	// Load input file and store queries written in the file
+	err := s.File("sql/hjam.sql")
+	if err != nil {
+		log.Fatal("Невозможно получить файл")
+	}
+	_, err = s.Exec(db)
+	if err != nil {
+		log.Fatal("Невозможно мигрировать базу данных")
+	}
 }

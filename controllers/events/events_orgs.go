@@ -132,7 +132,8 @@ func EditEvent(input *EventEditInput, db *sql.DB) (*FullEventOutput, error) {
 	}
 
 	if user.Perms != 10 {
-		if err := db.QueryRow("SELECT * FROM event_orgs WHERE organizator_email = $1 AND event_uri = $2", user.Email, input.Urid).Scan(); err != nil {
+		var organizator_email string
+		if err := db.QueryRow("SELECT organizator_email FROM event_orgs WHERE organizator_email = $1 AND event_uri = $2", user.Email, input.Urid).Scan(&organizator_email); err != nil {
 			if err == sql.ErrNoRows {
 				return nil, huma.Error403Forbidden("Это не твое мероприятие :/")
 			}
@@ -167,7 +168,8 @@ func DeleteEvent(input *EventDeleteInput, db *sql.DB) (*DeleteEventOutput, error
 		return nil, huma.Error403Forbidden("Пользователь не найден")
 	}
 	if user.Perms != 10 {
-		if err := db.QueryRow("SELECT * FROM event_orgs WHERE organizator_email = $1 AND event_uri = $2", user.Email, input.Urid).Scan(); err != nil {
+		var organizator_email string
+		if err := db.QueryRow("SELECT organizator_email FROM event_orgs WHERE organizator_email = $1 AND event_uri = $2", user.Email, input.Urid).Scan(&organizator_email); err != nil {
 			if err == sql.ErrNoRows {
 				return nil, huma.Error403Forbidden("Это не твое мероприятие :/")
 			}
@@ -227,7 +229,8 @@ func AddEventTags(input *EventTagAddDelInput, db *sql.DB) (*FullEventOutput, err
 	}
 
 	if user.Perms != 10 {
-		if err := db.QueryRow("SELECT * FROM event_orgs WHERE organizator_email = $1 AND event_uri = $2", user.Email, input.Urid).Scan(); err != nil {
+		var organizator_email string
+		if err := db.QueryRow("SELECT organizator_email FROM event_orgs WHERE organizator_email = $1 AND event_uri = $2", user.Email, input.Urid).Scan(&organizator_email); err != nil {
 			if err == sql.ErrNoRows {
 				return nil, huma.Error403Forbidden("Это не твое мероприятие :/")
 			}
@@ -235,10 +238,19 @@ func AddEventTags(input *EventTagAddDelInput, db *sql.DB) (*FullEventOutput, err
 		}
 	}
 
-	for tag := range input.Body.Tags {
-		if err := db.QueryRow("INSERT INTO event_tags (event_uri, tag) VALUES ($1, $2)", input.Urid, tag).Scan(); err != nil {
+	for _, tag := range input.Body.Tags {
+		var tmp string
+		if err := db.QueryRow("SELECT tag FROM event_tags WHERE event_uri = $1 AND tag = $2", input.Urid, tag).Scan(&tmp); err != nil {
+			if err == sql.ErrNoRows {
+				continue
+			}
 			return nil, huma.Error422UnprocessableEntity(err.Error())
 		}
+		if tag == tmp {
+			continue
+		}
+
+		_ = db.QueryRow("INSERT INTO event_tags (event_uri, tag) VALUES ($1, $2)", input.Urid, tag).Scan()
 	}
 
 	return getFullEventInfo(input.Urid, db)
@@ -252,7 +264,8 @@ func DelEventTags(input *EventTagAddDelInput, db *sql.DB) (*FullEventOutput, err
 	}
 
 	if user.Perms != 10 {
-		if err := db.QueryRow("SELECT * FROM event_orgs WHERE organizator_email = $1 AND event_uri = $2", user.Email, input.Urid).Scan(); err != nil {
+		var organizator_email string
+		if err := db.QueryRow("SELECT organizator_email FROM event_orgs WHERE organizator_email = $1 AND event_uri = $2", user.Email, input.Urid).Scan(&organizator_email); err != nil {
 			if err == sql.ErrNoRows {
 				return nil, huma.Error403Forbidden("Это не твое мероприятие :/")
 			}
@@ -260,8 +273,9 @@ func DelEventTags(input *EventTagAddDelInput, db *sql.DB) (*FullEventOutput, err
 		}
 	}
 
-	for tag := range input.Body.Tags {
-		if err := db.QueryRow("SELECT * FROM event_tags WHERE event_uri = $1 AND tag = $2", input.Urid, tag).Scan(); err != nil {
+	for _, tag := range input.Body.Tags {
+		var tmp string
+		if err := db.QueryRow("SELECT tag FROM event_tags WHERE event_uri = $1 AND tag = $2", input.Urid, tag).Scan(&tmp); err != nil {
 			if err == sql.ErrNoRows {
 				continue
 			}
@@ -298,7 +312,8 @@ func AddEventPartners(input *EventPartnersAddDelInput, db *sql.DB) (*FullEventOu
 	}
 
 	if user.Perms != 10 {
-		if err := db.QueryRow("SELECT * FROM event_orgs WHERE organizator_email = $1 AND event_uri = $2", user.Email, input.Urid).Scan(); err != nil {
+		var organizator_email string
+		if err := db.QueryRow("SELECT organizator_email FROM event_orgs WHERE organizator_email = $1 AND event_uri = $2", user.Email, input.Urid).Scan(&organizator_email); err != nil {
 			if err == sql.ErrNoRows {
 				return nil, huma.Error403Forbidden("Это не твое мероприятие :/")
 			}
@@ -306,10 +321,8 @@ func AddEventPartners(input *EventPartnersAddDelInput, db *sql.DB) (*FullEventOu
 		}
 	}
 
-	for logo := range input.Body.Partners {
-		if err := db.QueryRow("INSERT INTO event_partners (event_uri, logo_url) VALUES ($1, $2)", input.Urid, logo).Scan(); err != nil {
-			return nil, huma.Error422UnprocessableEntity(err.Error())
-		}
+	for _, logo := range input.Body.Partners {
+		_ = db.QueryRow("INSERT INTO event_partners (event_uri, logo_url) VALUES ($1, $2)", input.Urid, logo).Scan()
 	}
 
 	return getFullEventInfo(input.Urid, db)
@@ -323,7 +336,8 @@ func DelEventPartners(input *EventPartnersAddDelInput, db *sql.DB) (*FullEventOu
 	}
 
 	if user.Perms != 10 {
-		if err := db.QueryRow("SELECT * FROM event_orgs WHERE organizator_email = $1 AND event_uri = $2", user.Email, input.Urid).Scan(); err != nil {
+		var organizator_email string
+		if err := db.QueryRow("SELECT organizator_email FROM event_orgs WHERE organizator_email = $1 AND event_uri = $2", user.Email, input.Urid).Scan(&organizator_email); err != nil {
 			if err == sql.ErrNoRows {
 				return nil, huma.Error403Forbidden("Это не твое мероприятие :/")
 			}
@@ -331,8 +345,9 @@ func DelEventPartners(input *EventPartnersAddDelInput, db *sql.DB) (*FullEventOu
 		}
 	}
 
-	for logo := range input.Body.Partners {
-		if err := db.QueryRow("SELECT * FROM event_partners WHERE event_uri = $1 AND logo_url = $2", input.Urid, logo).Scan(); err != nil {
+	for _, logo := range input.Body.Partners {
+		var tmp string
+		if err := db.QueryRow("SELECT logo_url FROM event_partners WHERE event_uri = $1 AND tag = $2", input.Urid, logo).Scan(&tmp); err != nil {
 			if err == sql.ErrNoRows {
 				continue
 			}

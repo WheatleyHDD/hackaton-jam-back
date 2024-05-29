@@ -7,7 +7,6 @@ import (
 	"os"
 
 	_ "github.com/lib/pq"
-	"github.com/tanimutomo/sqlfile"
 )
 
 func ConnectDB() *sql.DB {
@@ -26,23 +25,6 @@ func ConnectDB() *sql.DB {
 	if err != nil {
 		log.Println("db.Ping() показал:")
 		log.Fatal(err)
-	}
-
-	if os.Getenv("FIRST_RUN") == "1" {
-		_ = db.QueryRow("DROP SCHEMA public CASCADE;" +
-			"CREATE SCHEMA public;")
-
-		s := sqlfile.New()
-
-		// Load input file and store queries written in the file
-		err = s.File("sql/hjam.sql")
-		if err != nil {
-			log.Fatal("Невозможно получить файл")
-		}
-		_, err = s.Exec(db)
-		if err != nil {
-			log.Fatal("Невозможно мигрировать базу данных")
-		}
 	}
 
 	return db
