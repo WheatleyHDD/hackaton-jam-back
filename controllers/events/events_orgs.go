@@ -22,7 +22,7 @@ type EventCreationInput struct {
 		Location              string    `json:"location" example:"Свердловская область, г. Екатеринбург" doc:"Место проведения"`
 		Icon                  string    `json:"icon" doc:"Превью мероприятия"`
 		IsIrl                 bool      `json:"is_irl" doc:"Очное ли мероприятие?"`
-		TeamRequirementsType  int       `json:"team_requirements_type" doc:"Тип равенства требования к количеству сокомандников"`
+		TeamRequirementsType  int       `json:"team_requirements_type" doc:"Тип равенства требования к количеству сокомандников (0 - ==, 1 - <=, 2 - <, 3 - =>, 4 >)"`
 		TeamRequirementsValue int       `json:"team_requirements_value" doc:"Количество сокомандников"`
 
 		Description  string `json:"desc,omitempty" doc:"Описание мероприятия"`
@@ -51,7 +51,7 @@ type EventEditInput struct {
 		Location              string    `json:"location,omitempty" example:"Свердловская область, г. Екатеринбург" doc:"Место проведения"`
 		Icon                  string    `json:"icon,omitempty" doc:"Превью мероприятия"`
 		IsIrl                 bool      `json:"is_irl,omitempty" doc:"Очное ли мероприятие?"`
-		TeamRequirementsType  int       `json:"team_requirements_type,omitempty" doc:"Тип равенства требования к количеству сокомандников"`
+		TeamRequirementsType  int       `json:"team_requirements_type,omitempty" doc:"Тип равенства требования к количеству сокомандников (0 - ==, 1 - <=, 2 - <, 3 - =>, 4 >)"`
 		TeamRequirementsValue int       `json:"team_requirements_value,omitempty" doc:"Количество сокомандников"`
 
 		Description  string `json:"desc,omitempty" doc:"Описание мероприятия"`
@@ -78,7 +78,7 @@ type FullEventOutput struct {
 		Partners              []string  `json:"partners" doc:"Партнеры мероприятия"`
 		Icon                  string    `json:"icon" doc:"Превью мероприятия"`
 		IsIrl                 bool      `json:"is_irl" doc:"Очное ли мероприятие?"`
-		TeamRequirementsType  int       `json:"team_requirements_type" doc:"Тип равенства требования к количеству сокомандников"`
+		TeamRequirementsType  int       `json:"team_requirements_type" doc:"Тип равенства требования к количеству сокомандников (0 - ==, 1 - <=, 2 - <, 3 - =>, 4 >)"`
 		TeamRequirementsValue int       `json:"team_requirements_value" doc:"Количество сокомандников"`
 
 		Tags         []string        `json:"tags" doc:"Тэги события"`
