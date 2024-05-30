@@ -47,7 +47,7 @@ CREATE TABLE "contacts" (
 
 
 CREATE TABLE "teams" (
-	"id" bigint NOT NULL,
+	"id" bigserial NOT NULL,
 	"event_uri" varchar(255) NOT NULL,
 	"name" varchar(255) NOT NULL UNIQUE DEFAULT 'Без названия',
 	"teamleader" varchar(255) NOT NULL,
@@ -66,11 +66,13 @@ CREATE TABLE "teams_members" (
   OIDS=FALSE
 );
 
-CREATE TABLE "teams_invites" (
+CREATE TABLE "notifications" (
+	"id" bigserial NOT NULL,
+	"user" varchar(255) NOT NULL,
 	"team_id" bigint NOT NULL,
-	"inviter" varchar(255) NOT NULL,
-	"invitee" varchar(255) NOT NULL,
-	"status" int NOT NULL
+	"type" int NOT NULL,
+	"from" varchar(255) NOT NULL,
+	"event_uri" varchar(255) NOT NULL
 ) WITH (
   OIDS=FALSE
 );
@@ -78,7 +80,7 @@ CREATE TABLE "teams_invites" (
 
 CREATE TABLE "events" (
 	"urid" varchar(255) NOT NULL,
-	"id" serial NOT NULL,
+	"id" bigserial NOT NULL,
 	"name" varchar(255) NOT NULL,
 	"start_time" timestamp with time zone NOT NULL,
 	"end_time" timestamp with time zone NOT NULL,
@@ -116,7 +118,7 @@ CREATE TABLE "event_members" (
 
 
 CREATE TABLE "event_blog" (
-	"id" serial NOT NULL,
+	"id" bigserial NOT NULL,
 	"event_uri" varchar(255) NOT NULL,
 	"title" varchar(255) NOT NULL,
 	"author" varchar(255) NOT NULL,
@@ -161,9 +163,10 @@ ALTER TABLE "teams" ADD CONSTRAINT "teams_fk1" FOREIGN KEY ("teamleader") REFERE
 ALTER TABLE "teams_members" ADD CONSTRAINT "teams_members_fk0" FOREIGN KEY ("team_id") REFERENCES "teams"("id");
 ALTER TABLE "teams_members" ADD CONSTRAINT "teams_members_fk1" FOREIGN KEY ("member_email") REFERENCES "users"("email");
 
-ALTER TABLE "teams_invites" ADD CONSTRAINT "team_invites_fk0" FOREIGN KEY ("team_id") REFERENCES "teams"("id");
-ALTER TABLE "teams_invites" ADD CONSTRAINT "team_invites_fk1" FOREIGN KEY ("inviter") REFERENCES "users"("email");
-ALTER TABLE "teams_invites" ADD CONSTRAINT "team_invites_fk2" FOREIGN KEY ("invitee") REFERENCES "users"("email");
+ALTER TABLE "notifications" ADD CONSTRAINT "notifications_fk0" FOREIGN KEY ("user") REFERENCES "users"("email");
+ALTER TABLE "notifications" ADD CONSTRAINT "notifications_fk1" FOREIGN KEY ("from") REFERENCES "users"("email");
+ALTER TABLE "notifications" ADD CONSTRAINT "notifications_fk2" FOREIGN KEY ("team_id") REFERENCES "teams"("id");
+ALTER TABLE "notifications" ADD CONSTRAINT "notifications_fk3" FOREIGN KEY ("event_uri") REFERENCES "events"("urid");
 
 
 ALTER TABLE "event_orgs" ADD CONSTRAINT "event_orgs_fk0" FOREIGN KEY ("event_uri") REFERENCES "events"("urid");
