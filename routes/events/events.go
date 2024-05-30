@@ -111,7 +111,7 @@ func Route(api huma.API, db *sql.DB) {
 
 	huma.Register(api, huma.Operation{
 		OperationID: "get-curr-user-events",
-		Method:      http.MethodGet,
+		Method:      http.MethodPost,
 		Path:        "/api/user-events",
 		Summary:     "События текущего пользователя",
 		Tags:        []string{"События и пользователи"},
