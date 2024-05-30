@@ -13,7 +13,7 @@ import (
 func Route(api huma.API, db *sql.DB) {
 	huma.Register(api, huma.Operation{
 		OperationID: "get-notifications",
-		Method:      http.MethodGet,
+		Method:      http.MethodPost,
 		Path:        "/api/notifications",
 		Summary:     "Получить уведомления",
 		Tags:        []string{"Уведомления"},

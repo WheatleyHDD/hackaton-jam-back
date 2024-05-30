@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"hackaton-jam-back/controllers/utils"
 	"log"
+	"reflect"
+	"strings"
 
 	"github.com/danielgtaylor/huma/v2"
 )
@@ -20,7 +22,7 @@ type EditProfileInput struct {
 		About      string `json:"about,omitempty" example:"" doc:"Описание пользователя"`
 		WorkPlace  string `json:"work_place,omitempty" example:"IT" doc:"Место работы"`
 		WorkTime   string `json:"work_time,omitempty" example:"2 месяца" doc:"Опыт работы"`
-		Location   string `json:"location,omitempty" example:"Екатеринбург" doc:"Место жительства"`
+		Location   string `json:"loc,omitempty" example:"Екатеринбург" doc:"Место жительства"`
 	}
 }
 
@@ -93,68 +95,22 @@ func EditProfile(input *EditProfileInput, db *sql.DB) (*ProfileOutput, error) {
 		return nil, err
 	}
 
-	// Никнейм
-	if input.Body.Username != "" {
-		err := db.QueryRow("UPDATE users SET username = $2 WHERE email = $1", user.Email, input.Body.Username).Scan()
-		if err != nil {
-			return nil, huma.Error403Forbidden(err.Error())
+	val := reflect.ValueOf(input.Body)
+	t := val.Type()
+	for i := 0; i < t.NumField(); i++ {
+		column_name := t.Field(i)
+		if column_name.Name == "Token" {
+			continue
 		}
-	}
 
-	// Аватар
-	if input.Body.Avatar != "" {
-		err := db.QueryRow("UPDATE users SET avatar = $2 WHERE email = $1", user.Email, input.Body.Avatar).Scan()
-		if err != nil {
-			return nil, huma.Error403Forbidden(err.Error())
-		}
-	}
+		fvalue := reflect.Indirect(val).FieldByName(column_name.Name)
 
-	// Имя
-	if input.Body.FirstName != "" {
-		err := db.QueryRow("UPDATE users SET first_name = $2 WHERE email = $1", user.Email, input.Body.FirstName).Scan()
-		if err != nil {
-			return nil, huma.Error403Forbidden(err.Error())
+		if fvalue.IsZero() {
+			continue
 		}
-	}
 
-	// Фамилия
-	if input.Body.LastName != "" {
-		err := db.QueryRow("UPDATE users SET last_name = $2 WHERE email = $1", user.Email, input.Body.LastName).Scan()
-		if err != nil {
-			return nil, huma.Error403Forbidden(err.Error())
-		}
-	}
-
-	// Отчество
-	if input.Body.Username != "" {
-		err := db.QueryRow("UPDATE users SET username = $2 WHERE email = $1", user.Email, input.Body.Username).Scan()
-		if err != nil {
-			return nil, huma.Error403Forbidden(err.Error())
-		}
-	}
-
-	// Аватар
-	if input.Body.Avatar != "" {
-		err := db.QueryRow("UPDATE users SET avatar = $2 WHERE email = $1", user.Email, input.Body.Avatar).Scan()
-		if err != nil {
-			return nil, huma.Error403Forbidden(err.Error())
-		}
-	}
-
-	// Имя
-	if input.Body.FirstName != "" {
-		err := db.QueryRow("UPDATE users SET first_name = $2 WHERE email = $1", user.Email, input.Body.FirstName).Scan()
-		if err != nil {
-			return nil, huma.Error403Forbidden(err.Error())
-		}
-	}
-
-	// Фамилия
-	if input.Body.LastName != "" {
-		err := db.QueryRow("UPDATE users SET last_name = $2 WHERE email = $1", user.Email, input.Body.LastName).Scan()
-		if err != nil {
-			return nil, huma.Error403Forbidden(err.Error())
-		}
+		db.QueryRow("UPDATE users SET "+strings.Split(column_name.Tag.Get("json"), ",")[0]+" = $2 WHERE email = $1", user.Email, fvalue.String()).Scan()
+		//                                                                       дебилизм ^                                  идиотизм ^
 	}
 
 	return GetProfile(user.Username, db)

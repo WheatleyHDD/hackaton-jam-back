@@ -146,17 +146,18 @@ func EditEvent(input *EventEditInput, db *sql.DB) (*FullEventOutput, error) {
 	t := val.Type()
 	for i := 0; i < t.NumField(); i++ {
 		column_name := t.Field(i)
+		if column_name.Name == "Token" {
+			continue
+		}
+
 		fvalue := reflect.Indirect(val).FieldByName(column_name.Name)
 
 		if fvalue.IsZero() {
 			continue
 		}
 
-		err := db.QueryRow("UPDATE events SET "+strings.Split(column_name.Tag.Get("json"), ",")[0]+" = $2 WHERE urid = $1", user.Email, fvalue.String()).Scan()
-		//                                                                               дебилизм ^                                  идиотизм ^
-		if err != nil {
-			return nil, huma.Error403Forbidden(err.Error())
-		}
+		db.QueryRow("UPDATE events SET "+strings.Split(column_name.Tag.Get("json"), ",")[0]+" = $2 WHERE urid = $1", user.Email, fvalue.String()).Scan()
+		//                                                                        дебилизм ^                                  идиотизм ^
 	}
 
 	return getFullEventInfo(input.Urid, db)

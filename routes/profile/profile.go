@@ -25,7 +25,7 @@ func Route(api huma.API, db *sql.DB) {
 
 	huma.Register(api, huma.Operation{
 		OperationID: "get-profile",
-		Method:      http.MethodGet,
+		Method:      http.MethodPost,
 		Path:        "/api/profile",
 		Summary:     "Получить профиль текущего пользователя",
 		Tags:        []string{"Профили"},
@@ -127,7 +127,7 @@ func Route(api huma.API, db *sql.DB) {
 
 	huma.Register(api, huma.Operation{
 		OperationID: "search-profile-skills",
-		Method:      http.MethodGet,
+		Method:      http.MethodPost,
 		Path:        "/api/skills/search",
 		Summary:     "Поиск навыков пользователя",
 		Description: "Поиск навыков пользователя",
