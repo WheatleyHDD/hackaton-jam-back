@@ -3,6 +3,7 @@ package events
 import (
 	"database/sql"
 	"hackaton-jam-back/controllers/utils"
+	"strconv"
 
 	"github.com/danielgtaylor/huma/v2"
 )
@@ -18,6 +19,19 @@ type EventJoinExitOutput struct {
 	Success bool `json:"success" example:"true" doc:"Успех выполнения"`
 }
 
+type EventSearchUsers struct {
+	Urid string `path:"urid" maxLength:"30" example:"example_events" doc:"Ссылка на мероприятие"`
+	Body struct {
+		SkillsToSearch []string `json:"skills_to_search" doc:"Токен пользователя"`
+	}
+}
+
+type EventSearchUsersOutput struct {
+	Body struct {
+		Users []*utils.UserShortInfo `json:"users" doc:"Таблица подходящих пользователей по критериям (если нет - выводит всех)"`
+	}
+}
+
 type UserEventsOutput struct {
 	Body struct {
 		Events []EventType `json:"event" doc:"Лист с событиями"`
@@ -25,11 +39,8 @@ type UserEventsOutput struct {
 }
 
 func JoinEvent(input *EventJoinExitInput, db *sql.DB) (*EventJoinExitOutput, error) {
-	if err := db.QueryRow("SELECT urid FROM events WHERE urid = $1", input.Urid).Scan(); err != nil {
-		if err == sql.ErrNoRows {
-			return nil, huma.Error403Forbidden("Этого события нет XP")
-		}
-		return nil, huma.Error422UnprocessableEntity(err.Error())
+	if err := isEventExists(input.Urid, db); err != nil {
+		return nil, err
 	}
 
 	// Проверить можем ли присоединится к меро?
@@ -49,11 +60,8 @@ func JoinEvent(input *EventJoinExitInput, db *sql.DB) (*EventJoinExitOutput, err
 }
 
 func ExitEvent(input *EventJoinExitInput, db *sql.DB) (*EventJoinExitOutput, error) {
-	if err := db.QueryRow("SELECT urid FROM events WHERE urid = $1", input.Urid).Scan(); err != nil {
-		if err == sql.ErrNoRows {
-			return nil, huma.Error403Forbidden("Этого события нет XP")
-		}
-		return nil, huma.Error422UnprocessableEntity(err.Error())
+	if err := isEventExists(input.Urid, db); err != nil {
+		return nil, err
 	}
 
 	// Проверить можем ли присоединится к меро?
@@ -90,12 +98,82 @@ func GetAllJoinedEvents(email string, db *sql.DB) (*UserEventsOutput, error) {
 		var id int
 		var member string
 		var event EventType
-		if err := rows.Scan(&id, &event.Urid, &id, &event.Name, &event.StartTime, &event.EndTime, &event.Location, member); err != nil {
+		if err := rows.Scan(&id, &event.Urid, &id, &event.Name, &event.StartTime, &event.EndTime, &event.Location, &member); err != nil {
 			return nil, huma.Error422UnprocessableEntity(err.Error())
 		}
 		result.Body.Events = append(result.Body.Events, event)
 	}
 	if err = rows.Err(); err != nil {
+		return nil, huma.Error422UnprocessableEntity(err.Error())
+	}
+
+	return result, nil
+}
+
+func GetAllEventMembers(input *EventSearchUsers, db *sql.DB) (*EventSearchUsersOutput, error) {
+	// Проверяем событие на наличие
+	if err := isEventExists(input.Urid, db); err != nil {
+		return nil, err
+	}
+
+	var rows *sql.Rows
+
+	if len(input.Body.SkillsToSearch) > 0 {
+		queryPiece := "("
+
+		for i := range input.Body.SkillsToSearch {
+			if i != 0 {
+				queryPiece += " AND "
+			}
+			queryPiece += "skills.skill=$" + strconv.Itoa(i+2)
+		}
+		queryPiece += ")"
+
+		var err error
+		rows, err = db.Query(
+			"SELECT event_members.member_email, COUNT(*) as count "+
+				"FROM event_members INNER JOIN events ON event_members.event_uri=events.urid "+
+				"JOIN skills ON event_members.member_email=skills.user_email "+
+				"WHERE event_members.event_uri=$1 AND ("+queryPiece+") "+
+				"GROUP BY event_members.member_email", input.Urid, input.Body.SkillsToSearch,
+		)
+		if err != nil {
+			return nil, huma.Error422UnprocessableEntity("Проблемки с вызовом SQL")
+		}
+	} else {
+		var err error
+		rows, err = db.Query(
+			"SELECT event_members.member_email "+
+				"FROM event_members INNER JOIN events ON event_members.event_uri=events.urid "+
+				"JOIN skills ON event_members.member_email=skills.user_email "+
+				"WHERE event_members.event_uri=$1 "+
+				"GROUP BY event_members.member_email", input.Urid,
+		)
+		if err != nil {
+			return nil, huma.Error422UnprocessableEntity("Проблемки с вызовом SQL")
+		}
+	}
+
+	result := new(EventSearchUsersOutput)
+
+	for rows.Next() {
+		var member_email string
+		var count int
+		if err := rows.Scan(&member_email, &count); err != nil {
+			return nil, huma.Error422UnprocessableEntity(err.Error())
+		}
+		if count == len(input.Body.SkillsToSearch) {
+			continue
+		}
+
+		user, err := utils.GetUserShortInfo(member_email, db)
+		if err != nil {
+			return nil, err
+		}
+
+		result.Body.Users = append(result.Body.Users, user)
+	}
+	if err := rows.Err(); err != nil {
 		return nil, huma.Error422UnprocessableEntity(err.Error())
 	}
 

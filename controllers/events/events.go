@@ -218,3 +218,15 @@ func getEventPartners(urid string, db *sql.DB) ([]string, error) {
 
 	return result, nil
 }
+
+func isEventExists(urid string, db *sql.DB) error {
+	var tmp string
+	if err := db.QueryRow("SELECT urid FROM events WHERE urid = $1", urid).Scan(&tmp); err != nil {
+		if err == sql.ErrNoRows {
+			return huma.Error403Forbidden("Этого события нет XP")
+		}
+		return huma.Error422UnprocessableEntity(err.Error())
+	}
+
+	return nil
+}

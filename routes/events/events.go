@@ -99,6 +99,17 @@ func Route(api huma.API, db *sql.DB) {
 	})
 
 	huma.Register(api, huma.Operation{
+		OperationID: "get-users",
+		Method:      http.MethodGet,
+		Path:        "/api/event/{email}/search-member",
+		Summary:     "Поиск людей по навыкам",
+		Description: "Ищет пользователей по критериям илли выводит всех участвующих людей",
+		Tags:        []string{"События и пользователи"},
+	}, func(ctx context.Context, input *events.EventSearchUsers) (*events.EventSearchUsersOutput, error) {
+		return events.GetAllEventMembers(input, db)
+	})
+
+	huma.Register(api, huma.Operation{
 		OperationID: "get-curr-user-events",
 		Method:      http.MethodGet,
 		Path:        "/api/user-events",

@@ -47,8 +47,10 @@ CREATE TABLE "contacts" (
 
 
 CREATE TABLE "teams" (
-	"id" serial NOT NULL,
+	"id" bigint NOT NULL,
+	"event_uri" varchar(255) NOT NULL,
 	"name" varchar(255) NOT NULL UNIQUE DEFAULT 'Без названия',
+	"teamleader" varchar(255) NOT NULL,
 	CONSTRAINT "teams_pk" PRIMARY KEY ("id")
 ) WITH (
   OIDS=FALSE
@@ -64,6 +66,14 @@ CREATE TABLE "teams_members" (
   OIDS=FALSE
 );
 
+CREATE TABLE "teams_invites" (
+	"team_id" bigint NOT NULL,
+	"inviter" varchar(255) NOT NULL,
+	"invitee" varchar(255) NOT NULL,
+	"status" int NOT NULL
+) WITH (
+  OIDS=FALSE
+);
 
 
 CREATE TABLE "events" (
@@ -145,8 +155,15 @@ ALTER TABLE "skills" ADD CONSTRAINT "skills_fk0" FOREIGN KEY ("user_email") REFE
 ALTER TABLE "contacts" ADD CONSTRAINT "contacts_fk0" FOREIGN KEY ("user_email") REFERENCES "users"("email");
 
 
+ALTER TABLE "teams" ADD CONSTRAINT "teams_fk0" FOREIGN KEY ("event_uri") REFERENCES "events"("urid");
+ALTER TABLE "teams" ADD CONSTRAINT "teams_fk1" FOREIGN KEY ("teamleader") REFERENCES "users"("email");
+
 ALTER TABLE "teams_members" ADD CONSTRAINT "teams_members_fk0" FOREIGN KEY ("team_id") REFERENCES "teams"("id");
 ALTER TABLE "teams_members" ADD CONSTRAINT "teams_members_fk1" FOREIGN KEY ("member_email") REFERENCES "users"("email");
+
+ALTER TABLE "teams_invites" ADD CONSTRAINT "team_invites_fk0" FOREIGN KEY ("team_id") REFERENCES "teams"("id");
+ALTER TABLE "teams_invites" ADD CONSTRAINT "team_invites_fk1" FOREIGN KEY ("inviter") REFERENCES "users"("email");
+ALTER TABLE "teams_invites" ADD CONSTRAINT "team_invites_fk2" FOREIGN KEY ("invitee") REFERENCES "users"("email");
 
 
 ALTER TABLE "event_orgs" ADD CONSTRAINT "event_orgs_fk0" FOREIGN KEY ("event_uri") REFERENCES "events"("urid");

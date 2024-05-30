@@ -18,6 +18,17 @@ type UserEmail struct {
 	Perms    int
 }
 
+type UserShortInfo struct {
+	Email      string   `json:"email" example:"example@mail.ru" doc:"E-mail пользователя"`
+	Username   string   `json:"username" example:"ThatMaidGuy" doc:"Никнейм пользователя"`
+	Avatar     string   `json:"avatar" example:"http://example.com/avatar.jpg" doc:"Аватар пользователя"`
+	FirstName  string   `json:"first_name" example:"Иван" doc:"Имя пользователя"`
+	LastName   string   `json:"last_name" example:"Иванов" doc:"Фамилия пользователя"`
+	MiddleName string   `json:"middle_name" example:"Иванович" doc:"Отчество пользователя"`
+	Location   string   `json:"location" example:"г. Екатеринбург" doc:"Место жительства пользователя"`
+	Skills     []string `json:"skills" doc:"Навыки пользователя"`
+}
+
 func GetUserEmailByToken(token string, db *sql.DB) (*UserEmail, error) {
 	row := db.QueryRow("SELECT email, username, perms FROM users JOIN tokens ON tokens.user_email = users.email WHERE token = $1", token)
 
@@ -62,4 +73,45 @@ func GetUserUsernameByEmail(email string, db *sql.DB) (*UserEmail, error) {
 
 func NilToEmpty(val sql.NullString) string {
 	return val.String
+}
+
+func GetUserShortInfo(email string, db *sql.DB) (*UserShortInfo, error) {
+	result := new(UserShortInfo)
+
+	if err := db.QueryRow(
+		"SELECT email, username, avatar, first_name, last_name, middle_name, loc FROM users WHERE email = $1",
+		email).Scan(
+		&result.Email,
+		&result.Username,
+		&result.Avatar,
+		&result.FirstName,
+		&result.LastName,
+		&result.MiddleName,
+		&result.Location,
+	); err != nil {
+		return nil, huma.Error422UnprocessableEntity(err.Error())
+	}
+
+	rows, err := db.Query("SELECT skill FROM skills WHERE user_email = $1", email)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var skills []string
+
+	for rows.Next() {
+		var skill string
+		if err := rows.Scan(&skill); err != nil {
+			return nil, err
+		}
+		skills = append(skills, skill)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	result.Skills = skills
+
+	return result, nil
 }
