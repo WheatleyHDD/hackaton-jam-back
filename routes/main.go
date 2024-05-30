@@ -8,6 +8,7 @@ import (
 	"hackaton-jam-back/routes/example"
 	"hackaton-jam-back/routes/notifications"
 	"hackaton-jam-back/routes/profile"
+	"hackaton-jam-back/routes/teams"
 
 	"github.com/danielgtaylor/huma/v2"
 
@@ -20,4 +21,5 @@ func Route(api huma.API, db *sql.DB) {
 	profile.Route(api, db)
 	events.Route(api, db)
 	notifications.Route(api, db)
+	teams.Route(api, db)
 }

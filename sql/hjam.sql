@@ -61,6 +61,7 @@ CREATE TABLE "teams" (
 CREATE TABLE "teams_members" (
 	"team_id" bigint NOT NULL,
 	"member_email" varchar(255) NOT NULL,
+	"pending" bool NOT NULL DEFAULT true,
 	"role" varchar(255) NOT NULL
 ) WITH (
   OIDS=FALSE
