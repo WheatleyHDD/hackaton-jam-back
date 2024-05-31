@@ -52,9 +52,7 @@ func JoinEvent(input *EventJoinExitInput, db *sql.DB) (*EventJoinExitOutput, err
 		return nil, huma.Error403Forbidden("Участвовать можно только обычным пользователям")
 	}
 
-	if err := db.QueryRow("INSERT INTO event_members (event_uri, member_email) VALUES ($1, $2)", input.Urid, user.Email).Scan(); err != nil {
-		return nil, huma.Error422UnprocessableEntity(err.Error())
-	}
+	db.QueryRow("INSERT INTO event_members (event_uri, member_email) VALUES ($1, $2)", input.Urid, user.Email).Scan()
 
 	return &EventJoinExitOutput{Success: true}, nil
 }
@@ -74,9 +72,7 @@ func ExitEvent(input *EventJoinExitInput, db *sql.DB) (*EventJoinExitOutput, err
 	}
 
 	// Удаляем
-	if err := db.QueryRow("DELETE FROM event_members WHERE event_uri = $1 AND member_email = $2", input.Urid, user.Email).Scan(); err != nil {
-		return nil, huma.Error422UnprocessableEntity(err.Error())
-	}
+	db.QueryRow("DELETE FROM event_members WHERE event_uri = $1 AND member_email = $2", input.Urid, user.Email).Scan()
 
 	return &EventJoinExitOutput{Success: true}, nil
 }
