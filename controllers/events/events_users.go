@@ -48,7 +48,7 @@ func JoinEvent(input *EventJoinExitInput, db *sql.DB) (*EventJoinExitOutput, err
 	if err != nil {
 		return nil, huma.Error403Forbidden("Пользователь не найден")
 	}
-	if user.Perms == 0 {
+	if user.Perms != 0 {
 		return nil, huma.Error403Forbidden("Участвовать можно только обычным пользователям")
 	}
 
@@ -69,7 +69,7 @@ func ExitEvent(input *EventJoinExitInput, db *sql.DB) (*EventJoinExitOutput, err
 	if err != nil {
 		return nil, huma.Error403Forbidden("Пользователь не найден")
 	}
-	if user.Perms == 0 {
+	if user.Perms != 0 {
 		return nil, huma.Error403Forbidden("Участвовать можно только обычным пользователям")
 	}
 
