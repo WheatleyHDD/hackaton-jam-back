@@ -133,7 +133,7 @@ func GetAllEventMembers(input *EventSearchUsers, db *sql.DB) (*EventSearchUsersO
 				"GROUP BY event_members.member_email", input.Urid, input.Body.SkillsToSearch,
 		)
 		if err != nil {
-			return nil, huma.Error422UnprocessableEntity("Проблемки с вызовом SQL")
+			return nil, huma.Error422UnprocessableEntity(err.Error())
 		}
 
 		result := new(EventSearchUsersOutput)
@@ -171,7 +171,7 @@ func GetAllEventMembers(input *EventSearchUsers, db *sql.DB) (*EventSearchUsersO
 			"GROUP BY event_members.member_email", input.Urid,
 	)
 	if err != nil {
-		return nil, huma.Error422UnprocessableEntity("Проблемки с вызовом SQL")
+		return nil, huma.Error422UnprocessableEntity(err.Error())
 	}
 
 	result := new(EventSearchUsersOutput)
