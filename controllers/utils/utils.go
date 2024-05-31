@@ -78,6 +78,8 @@ func NilToEmpty(val sql.NullString) string {
 func GetUserShortInfo(email string, db *sql.DB) (*UserShortInfo, error) {
 	result := new(UserShortInfo)
 
+	var middle sql.NullString
+	var loca sql.NullString
 	if err := db.QueryRow(
 		"SELECT email, username, avatar, first_name, last_name, middle_name, loc FROM users WHERE email = $1",
 		email).Scan(
@@ -86,11 +88,14 @@ func GetUserShortInfo(email string, db *sql.DB) (*UserShortInfo, error) {
 		&result.Avatar,
 		&result.FirstName,
 		&result.LastName,
-		&result.MiddleName,
-		&result.Location,
+		&middle,
+		&loca,
 	); err != nil {
 		return nil, huma.Error422UnprocessableEntity(err.Error())
 	}
+
+	result.MiddleName = middle.String
+	result.Location = loca.String
 
 	rows, err := db.Query("SELECT skill FROM skills WHERE user_email = $1", email)
 	if err != nil {
