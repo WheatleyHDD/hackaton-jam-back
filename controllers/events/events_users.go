@@ -117,11 +117,15 @@ func GetAllEventMembers(input *EventSearchUsers, db *sql.DB) (*EventSearchUsersO
 	if len(input.Body.SkillsToSearch) > 0 {
 		queryPiece := "("
 
-		for i := range input.Body.SkillsToSearch {
+		var args []any
+		args = append(args, input.Urid)
+
+		for i, v := range input.Body.SkillsToSearch {
 			if i != 0 {
 				queryPiece += " AND "
 			}
 			queryPiece += "skills.skill=$" + strconv.Itoa(i+2)
+			args = append(args, v)
 		}
 		queryPiece += ")"
 
@@ -130,7 +134,7 @@ func GetAllEventMembers(input *EventSearchUsers, db *sql.DB) (*EventSearchUsersO
 				"FROM event_members INNER JOIN events ON event_members.event_uri=events.urid "+
 				"JOIN skills ON event_members.member_email=skills.user_email "+
 				"WHERE event_members.event_uri=$1 AND ("+queryPiece+") "+
-				"GROUP BY event_members.member_email", input.Urid, input.Body.SkillsToSearch,
+				"GROUP BY event_members.member_email", args...,
 		)
 		if err != nil {
 			return nil, huma.Error422UnprocessableEntity(err.Error())
@@ -164,11 +168,8 @@ func GetAllEventMembers(input *EventSearchUsers, db *sql.DB) (*EventSearchUsersO
 	}
 
 	rows, err := db.Query(
-		"SELECT event_members.member_email "+
-			"FROM event_members INNER JOIN events ON event_members.event_uri=events.urid "+
-			"JOIN skills ON event_members.member_email=skills.user_email "+
-			"WHERE event_members.event_uri=$1 "+
-			"GROUP BY event_members.member_email", input.Urid,
+		"SELECT event_members.member_email FROM event_members "+
+			"WHERE event_members.event_uri=$1", input.Urid,
 	)
 	if err != nil {
 		return nil, huma.Error422UnprocessableEntity(err.Error())
@@ -178,12 +179,8 @@ func GetAllEventMembers(input *EventSearchUsers, db *sql.DB) (*EventSearchUsersO
 
 	for rows.Next() {
 		var member_email string
-		var count int
-		if err := rows.Scan(&member_email, &count); err != nil {
+		if err := rows.Scan(&member_email); err != nil {
 			return nil, huma.Error422UnprocessableEntity(err.Error())
-		}
-		if count == len(input.Body.SkillsToSearch) {
-			continue
 		}
 
 		user, err := utils.GetUserShortInfo(member_email, db)
