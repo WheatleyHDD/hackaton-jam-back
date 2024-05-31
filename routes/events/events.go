@@ -101,7 +101,7 @@ func Route(api huma.API, db *sql.DB) {
 	huma.Register(api, huma.Operation{
 		OperationID: "get-users",
 		Method:      http.MethodPost,
-		Path:        "/api/event/{email}/search-member",
+		Path:        "/api/event/{urid}/search-member",
 		Summary:     "Поиск людей по навыкам",
 		Description: "Ищет пользователей по критериям илли выводит всех участвующих людей",
 		Tags:        []string{"События и пользователи"},
