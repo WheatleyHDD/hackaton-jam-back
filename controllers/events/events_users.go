@@ -125,8 +125,7 @@ func GetAllEventMembers(input *EventSearchUsers, db *sql.DB) (*EventSearchUsersO
 		}
 		queryPiece += ")"
 
-		var err error
-		rows, err = db.Query(
+		rows, err := db.Query(
 			"SELECT event_members.member_email, COUNT(*) as count "+
 				"FROM event_members INNER JOIN events ON event_members.event_uri=events.urid "+
 				"JOIN skills ON event_members.member_email=skills.user_email "+
@@ -136,18 +135,43 @@ func GetAllEventMembers(input *EventSearchUsers, db *sql.DB) (*EventSearchUsersO
 		if err != nil {
 			return nil, huma.Error422UnprocessableEntity("Проблемки с вызовом SQL")
 		}
-	} else {
-		var err error
-		rows, err = db.Query(
-			"SELECT event_members.member_email "+
-				"FROM event_members INNER JOIN events ON event_members.event_uri=events.urid "+
-				"JOIN skills ON event_members.member_email=skills.user_email "+
-				"WHERE event_members.event_uri=$1 "+
-				"GROUP BY event_members.member_email", input.Urid,
-		)
-		if err != nil {
-			return nil, huma.Error422UnprocessableEntity("Проблемки с вызовом SQL")
+
+		result := new(EventSearchUsersOutput)
+
+		for rows.Next() {
+			var member_email string
+			var count int
+			if err := rows.Scan(&member_email, &count); err != nil {
+				return nil, huma.Error422UnprocessableEntity(err.Error())
+			}
+			if count == len(input.Body.SkillsToSearch) {
+				continue
+			}
+
+			user, err := utils.GetUserShortInfo(member_email, db)
+			if err != nil {
+				return nil, err
+			}
+
+			result.Body.Users = append(result.Body.Users, user)
 		}
+		if err := rows.Err(); err != nil {
+			return nil, huma.Error422UnprocessableEntity(err.Error())
+		}
+
+		return result, nil
+
+	}
+
+	rows, err := db.Query(
+		"SELECT event_members.member_email "+
+			"FROM event_members INNER JOIN events ON event_members.event_uri=events.urid "+
+			"JOIN skills ON event_members.member_email=skills.user_email "+
+			"WHERE event_members.event_uri=$1 "+
+			"GROUP BY event_members.member_email", input.Urid,
+	)
+	if err != nil {
+		return nil, huma.Error422UnprocessableEntity("Проблемки с вызовом SQL")
 	}
 
 	result := new(EventSearchUsersOutput)
